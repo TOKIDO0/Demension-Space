@@ -1,0 +1,48 @@
+// Firebase配置问题修复脚本
+// 此脚本解释Firebase加载失败的原因并提供解决方案
+
+console.log('====================================');
+console.log('Firebase加载失败问题分析与修复');
+console.log('====================================');
+console.log('');
+console.log('❌ 错误原因: SERVICE_ACCOUNT_KEY_PATH not set');
+console.log('');
+console.log('问题解释:');
+console.log('------------------------------------');
+console.log('1. Firebase部署需要服务账号密钥来进行身份验证');
+console.log('2. 当前环境中没有设置SERVICE_ACCOUNT_KEY_PATH环境变量');
+console.log('3. 该变量应该指向Firebase服务账号JSON文件的路径');
+console.log('');
+console.log('解决方案选项:');
+console.log('------------------------------------');
+console.log('选项1: 使用本地存储模式（推荐）');
+console.log('✅ 网站已经配置为默认使用本地存储模式');
+console.log('✅ 无需任何额外配置，表单数据将保存在浏览器localStorage中');
+console.log('✅ 适合开发测试和演示使用');
+console.log('');
+console.log('选项2: 配置Firebase服务账号');
+console.log('1. 登录Firebase控制台 (https://console.firebase.google.com/)');
+console.log('2. 选择您的项目 (dimension-space-design)');
+console.log('3. 导航到「项目设置」>「服务账号」');
+console.log('4. 点击「生成新的私钥」下载JSON文件');
+console.log('5. 将文件保存到安全位置');
+console.log('6. 设置环境变量:');
+console.log('   - Windows命令行: set SERVICE_ACCOUNT_KEY_PATH=D:\创作\AI App Create\Dimension Space\Dimension Space\config\src\dimension-space-firebase-adminsdk-fbsvc-b81b9f0ab9');
+console.log('   - PowerShell: $env:SERVICE_ACCOUNT_KEY_PATH="D:\创作\AI App Create\Dimension Space\Dimension Space\config\src\dimension-space-firebase-adminsdk-fbsvc-b81b9f0ab9"');
+console.log('');
+console.log('选项3: 使用Supabase部署（替代方案）');
+console.log('1. 确保您已正确配置Supabase URL和密钥');
+console.log('2. 运行: npm run supabase-deploy');
+console.log('');
+console.log('💡 重要提示:');
+console.log('------------------------------------');
+console.log('- 根据项目配置，您无需使用Firebase即可正常运行网站');
+console.log('- 网站已设置为在Supabase连接失败时自动使用本地存储模式');
+console.log('- 本地存储模式完全可以满足表单提交和数据保存需求');
+console.log('');
+console.log('✅ 建议操作:');
+console.log('------------------------------------');
+console.log('直接在浏览器中打开 public/index.html 文件进行测试');
+console.log('或者将public文件夹上传到任何静态网站托管服务');
+console.log('');
+console.log('====================================');

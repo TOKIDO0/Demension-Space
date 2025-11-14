@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>维度空间 - 装修设计工作室</title>
+    <meta name="description" content="维度空间 - 创意展示平台">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 移除重复的模块引用，避免加载冲突 -->
+</head>
+<body>
+    <!-- 背景容器 -->
+    <div class="background-container">
+        <div class="neon-blob blob-1"></div>
+        <div class="neon-blob blob-2"></div>
+        <div class="neon-blob blob-3"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="logo">维度空间</div>
+        <div class="nav-links">
+            <a href="#home">首页</a>
+            <a href="#works">作品</a>
+            <a href="#about">关于我们</a>
+            <a href="#contact">联系方式</a>
+        </div>
+        <div class="nav-actions">
+            <button id="login-btn" class="login-btn glass-button">登录</button>
+            <div id="user-avatar" class="user-avatar" style="display: none;">
+                <img src="https://picsum.photos/seed/user/40/40" alt="用户头像">
+                <div class="user-dropdown">
+                    <a href="#" id="user-details-link">账户详情</a>
+                    <a href="#" id="logout-link">登出</a>
+                </div>
+            </div>
+            <button id="appointment-btn" class="contact-btn glass-button">预约咨询</button>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 首页区域 -->
+        <section id="home" class="home-section">
+            <h1 class="studio-name">
+                <span class="dimension">维度</span>
+                <span class="space">空间</span>
+            </h1>
+            <p class="tagline">探索无限可能的空间设计</p>
+            <div class="cta-buttons">
+                <button id="browse-works-btn" class="primary-btn glass-button">浏览作品</button>
+                <button id="services-btn" class="secondary-btn glass-button">了解服务</button>
+            </div>
+        </section>
+
+        <!-- 作品展示区域 -->
+        <section id="works" class="works-section">
+            <h2 class="section-title">精选作品</h2>
+            <div class="works-grid">
+                <!-- 作品项1 -->
+                <div class="work-item">
+                    <div class="work-image">
+                        <img src="images/modern-livingroom.jpg" alt="现代简约风格客厅">
+                    </div>
+                    <div class="work-info">
+                        <h3>现代简约风格客厅</h3>
+                        <p>简约而不简单的设计理念，打造舒适宜居的生活空间</p>
+                    </div>
+                </div>
+                
+                <!-- 作品项2 -->
+                <div class="work-item">
+                    <div class="work-image">
+                        <img src="images/decorative-livingroom.jpg" alt="装饰风格客厅">
+                    </div>
+                    <div class="work-info">
+                        <h3>装饰风格客厅</h3>
+                        <p>华丽的装饰元素与精致的细节，营造优雅高贵的空间氛围</p>
+                    </div>
+                </div>
+                
+                <!-- 作品项3 -->
+                <div class="work-item">
+                    <div class="work-image">
+                        <img src="https://picsum.photos/seed/industrial-kitchen/600/400" alt="工业风厨房">
+                    </div>
+                    <div class="work-info">
+                        <h3>工业风厨房</h3>
+                        <p>粗犷与精致的碰撞，打造独特个性的烹饪空间</p>
+                    </div>
+                </div>
+
+                <!-- 作品项4 -->
+                <div class="work-item">
+                    <div class="work-image">
+                        <img src="https://picsum.photos/seed/scandinavian-bedroom/600/400" alt="北欧风格卧室">
+                    </div>
+                    <div class="work-info">
+                        <h3>北欧风格卧室</h3>
+                        <p>轻盈通透的设计，自然光线与简约家具的完美结合</p>
+                    </div>
+                </div>
+            </div>
+            <div class="more-projects">
+                <button class="glass-button" id="more-projects-btn">更多项目</button>
+            </div>
+        </section>
+
+        <!-- 关于我们区域 -->
+        <section id="about" class="about-section">
+            <h2 class="section-title">关于维度空间</h2>
+            <div class="about-content">
+                <p>维度空间是一家专注于高品质空间设计的工作室，我们相信每一个空间都有其独特的灵魂和无限的可能。</p>
+                <p>我们的设计团队由经验丰富的设计师组成，致力于将客户的愿景转化为令人惊叹的空间体验。无论是住宅、商业还是办公空间，我们都能提供专业、创新且实用的设计解决方案。</p>
+                <div class="design-philosophy">
+                    <h3>设计理念</h3>
+                    <p>我们追求「形随机能，美在和谐」的设计哲学，注重空间的功能性与美学价值的完美平衡。通过深入理解客户需求，结合最新的设计趋势和可持续发展理念，我们创造出既实用又富有艺术感染力的空间作品。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 联系方式区域 -->
+        <section id="contact" class="contact-section">
+            <h2 class="section-title">联系我们</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <p><strong>地址：</strong>新疆阿克苏新和县迎宾花园小区门面房</p>
+                    <p><strong>电话：</strong>17772297239</p>
+                    <p><strong>邮箱：</strong>1810266895@qq.com</p>
+                </div>
+                <form class="contact-form">
+                    <input type="text" id="contact-name" placeholder="您的姓名" required>
+                    <input type="tel" id="contact-phone" placeholder="您的电话" required>
+                    <textarea id="contact-message" placeholder="您的需求描述" required></textarea>
+                    <button type="submit" class="submit-btn glass-button">发送信息</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                    <h3>维度空间</h3>
+                    <p>探索无限可能的空间设计</p>
+                </div>
+            <div class="footer-links">
+                <a href="#home">首页</a>
+                <a href="#works">作品</a>
+                <a href="#about">关于我们</a>
+                <a href="#contact">联系方式</a>
+            </div>
+            <div class="footer-social">
+                <a href="#" id="wechat-link">微信</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 维度空间 装修设计工作室. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- 服务信息模态框 -->
+    <div id="services-modal" class="modal">
+        <div class="modal-content">
+            <h3>我们的服务</h3>
+            <div class="services-list">
+                <div class="service-item">
+                    <h4>住宅空间设计</h4>
+                    <p>为您的家打造舒适、美观且实用的居住环境，包括客厅、卧室、厨房、卫生间等空间的全面设计。</p>
+                </div>
+                <div class="service-item">
+                    <h4>商业空间设计</h4>
+                    <p>针对餐厅、咖啡厅、零售店等商业场所，创造独特且具有吸引力的空间氛围，提升品牌形象。</p>
+                </div>
+                <div class="service-item">
+                    <h4>办公空间设计</h4>
+                    <p>设计高效、舒适的办公环境，满足企业需求并提升员工工作效率和创造力。</p>
+                </div>
+                <div class="service-item">
+                    <h4>3D效果图制作</h4>
+                    <p>提供高质量的3D效果图，帮助您直观了解设计方案，提前预览空间效果。</p>
+                </div>
+                <div class="service-item">
+                    <h4>装修监理服务</h4>
+                    <p>全程监督装修过程，确保施工质量和设计方案的准确实施。</p>
+                </div>
+            </div>
+            <button id="close-services-modal" class="close-modal-btn glass-button">关闭</button>
+        </div>
+    </div>
+
+    <!-- 联系信息模态框 -->
+    <div id="contact-modal" class="modal">
+        <div class="modal-content">
+            <h3>联系我们</h3>
+            <div class="modal-contact-info">
+                <p><strong>地址：</strong>新疆阿克苏新和县迎宾花园小区门面房</p>
+                <p><strong>电话：</strong>17772297239</p>
+                <p><strong>邮箱：</strong>1810266895@qq.com</p>
+                <p><strong>营业时间：</strong>周一至周日 10:00 - 20:00</p>
+            </div>
+            <button id="close-contact-modal" class="close-modal-btn glass-button">关闭</button>
+        </div>
+    </div>
+
+    <!-- 登录/注册模态框 -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="auth-modal-title">欢迎回来</h3>
+            
+            <!-- 登录表单 -->
+            <div id="login-form" class="auth-form">
+                <div class="form-group">
+                    <label for="login-email">邮箱</label>
+                    <input type="email" id="login-email" placeholder="请输入邮箱地址" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">密码</label>
+                    <input type="password" id="login-password" placeholder="请输入密码" required>
+                </div>
+                <div class="form-options">
+                    <label><input type="checkbox"> 记住我</label>
+                    <a href="#" id="forgot-password-link">忘记密码？</a>
+                </div>
+                <button type="submit" id="login-submit-btn" class="auth-submit-btn glass-button">登录</button>
+                <div class="auth-switch">
+                    还没有账号？<a href="#" id="switch-to-register">立即注册</a>
+                </div>
+            </div>
+            
+            <!-- 注册表单 -->
+            <div id="register-form" class="auth-form" style="display: none;">
+                <div class="form-group">
+                    <label for="register-username">用户名</label>
+                    <input type="text" id="register-username" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">邮箱</label>
+                    <input type="email" id="register-email" placeholder="请输入邮箱地址" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-phone">手机号（选填）</label>
+                    <input type="tel" id="register-phone" placeholder="请输入手机号">
+                </div>
+                <div class="form-group">
+                    <label for="register-password">密码</label>
+                    <input type="password" id="register-password" placeholder="请设置密码，至少8位" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm-password">确认密码</label>
+                    <input type="password" id="register-confirm-password" placeholder="请再次输入密码" required>
+                </div>
+                <button type="submit" id="register-submit-btn" class="auth-submit-btn glass-button">注册</button>
+                <div class="auth-switch">
+                    已有账号？<a href="#" id="switch-to-login">立即登录</a>
+                </div>
+            </div>
+            
+            <!-- 错误消息区域 -->
+            <div id="auth-error" class="auth-error" style="display: none;"></div>
+            
+            <button id="close-auth-modal" class="close-modal-btn glass-button">关闭</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

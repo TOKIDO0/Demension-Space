@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta HTTP-EQUIV="pragma" CONTENT="no-cache">
+    <meta HTTP-EQUIV="Cache-Control" CONTENT="no-cache, must-revalidate">
+    <meta HTTP-EQUIV="expires" CONTENT="0">
+    <title>后台管理</title>
+    <link rel="stylesheet" href="../../css/element.css">
+    <link rel="stylesheet" href="../../css/base.css">
+    <style>
+        .avatar-uploader .el-upload {
+            border: 1px dashed #d9d9d9;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-uploader-icon {
+            font-size: 28px;
+            color: #8c939d;
+            width: 100px;
+            height: 100px;
+            line-height: 100px;
+            text-align: center;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            display: block;
+        }
+
+        .user:hover {
+            color: #409EFF;
+        }
+
+        .el-col-offset-21 {
+            margin-left: 67.5%;
+        }
+        .el-col-2 {
+            width: 28.33333%;
+        }
+    </style>
+</head>
+<body>
+<div id="wrapper" v-cloak>
+    <el-container>
+        <el-aside :width="isCollapse ? '64px' : '200px'"
+                  style="background-color: black; transition:width .5s; min-height: 100vh">
+            <div style="background-color: black; height: 60px; line-height: 60px; text-align: center;
+                color: white; font-size: 20px;">
+                <transition name="el-fade-in-linear">
+                    <span name="fade" v-show="!isCollapse"><a href="/page/end/frame.html">新空间装饰</a></span>
+                </transition>
+            </div>
+            <!-- 菜单 -->
+            <el-menu style="border: none;" background-color="black" text-color="#fff" active-text-color="#ffd04b"
+                     :default-active="src" @select="handleSelect" :collapse="isCollapse">
+                <el-menu-item index="index">
+                    <i class="el-icon-s-home"></i>
+                    <span slot="title">首页</span>
+                </el-menu-item>
+                <!-- 二级菜单 -->
+                <el-submenu index="system" v-if="0!=user.permission0.length">
+                    <span slot="title">系统管理</span>
+                    <el-menu-item :index="item.path" v-for="item in user.permission0">
+                        <i :class=`el-icon-${item.icon}`></i>
+                        <span slot="title">{{item.name}}</span>
+                    </el-menu-item>
+                </el-submenu>
+                <el-submenu index="basic" v-if="0!=user.permission1.length">
+                    <span slot="title">基础数据</span>
+                    <el-menu-item :index="item.path" v-for="item in user.permission1">
+                        <i :class=`el-icon-${item.icon}`></i>
+                        <span slot="title">{{item.name}}</span>
+                    </el-menu-item>
+                </el-submenu>
+                <el-submenu index="payment" v-if="0!=user.permission2.length">
+                    <span slot="title">收款管理</span>
+                    <el-menu-item :index="item.path" v-for="item in user.permission2">
+                        <i :class=`el-icon-${item.icon}`></i>
+                        <span slot="title">{{item.name}}</span>
+                    </el-menu-item>
+                    <el-menu-item index="CustomerRep">
+                        <i class="el-icon-view"></i>
+                        <span slot="title">客户报表</span>
+                    </el-menu-item>
+                </el-submenu>
+                <el-submenu index="construction" v-if="0!=user.permission3.length">
+                    <span slot="title">施工管理</span>
+                    <el-menu-item :index="item.path" v-for="item in user.permission3">
+                        <i :class=`el-icon-${item.icon}`></i>
+                        <span slot="title">{{item.name}}</span>
+                    </el-menu-item>
+                    <el-menu-item index="ConstructionRep">
+                        <i class="el-icon-c-scale-to-original"></i>
+                        <span slot="title">工程核算</span>
+                    </el-menu-item>
+                </el-submenu>
+                <el-submenu index="material" v-if="0!=user.permission4.length">
+                    <span slot="title">材料管理</span>
+                    <el-menu-item :index="item.path" v-for="item in user.permission4">
+                        <i :class=`el-icon-${item.icon}`></i>
+                        <span slot="title">{{item.name}}</span>
+                    </el-menu-item>
+                    <el-menu-item index="MaterialRep">
+                        <i class="el-icon-box"></i>
+                        <span slot="title">材料报表</span>
+                    </el-menu-item>
+                </el-submenu>
+                <el-submenu index="salary" v-if="0!=user.permission5.length">
+                    <span slot="title">薪资管理</span>
+                    <el-menu-item :index="item.path" v-for="item in user.permission5">
+                        <i :class=`el-icon-${item.icon}`></i>
+                        <span slot="title">{{item.name}}</span>
+                    </el-menu-item>
+                    <el-menu-item index="Salary">
+                        <i class="el-icon-wallet"></i>
+                        <span slot="title">工资表</span>
+                    </el-menu-item>
+                </el-submenu>
+            </el-menu>
+        </el-aside>
+        <el-container>
+            <el-header style="background-color: black; line-height: 60px; color: white;">
+                <el-row>
+                    <el-col :span="1">
+                        <i style="font-size: 22px; cursor: pointer"
+                           :class="[isCollapse ? 'el-icon-s-unfold' : 'el-icon-s-fold']" @click="handleCollapse"></i>
+                    </el-col>
+                    <el-col :span="2" :offset="21" style="text-align: right">
+                        <span style="color: white; margin-right: 10px">{{user.nickName}}</span>
+                        <el-dropdown>
+                            <img :src=`/files/${user.avatar}`
+                                 style="width: 40px; height: 40px; margin-right: 10px; border-radius: 50%">
+                            <el-dropdown-menu slot="dropdown"
+                                              style="color: black; cursor: pointer; text-align: center;">
+                                <!--                                <span @click="handleSelect('person')" style="display:inline-block; padding: 10px 0; width: 100px; ">个人信息</span>-->
+                                <span class="user" @click="per.drawer = true"
+                                      style="display:inline-block; padding: 10px 0; width: 100px; "><i
+                                        class="el-icon-user"></i> 个人信息</span>
+                                <span class="user" @click="per.dialogFormVisibleWrapper = true"
+                                      style="display:block; padding-bottom: 10px;width: 100px; "><i
+                                        class="el-icon-unlock"></i> 修改密码</span>
+                                <span class="user" @click="logout" style="display:block; width: 100px;  "><i
+                                        class="el-icon-switch-button"></i> 退出</span>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                    </el-col>
+                </el-row>
+            </el-header>
+            <!-- 主体区域 -->
+            <el-main>
+
+                <iframe id="myiframe" :src="src + '.html?new=' + Math.random()" frameborder="0" scrolling="no"
+                        style="width: 100%"></iframe>
+
+            </el-main>
+        </el-container>
+    </el-container>
+</div>
+<div id="person">
+    <el-drawer
+            title="用心装饰新空间"
+            :visible.sync="drawer"
+            :direction="direction"
+            size="20%">
+        <el-card style="width: 100%;">
+            <div slot="header" class="clearfix" style="display: flex">
+                <div style="font-size: 24px; flex: 1">个人信息</div>
+                <div style="flex: 1; text-align: right">
+                    <el-button size="small" type="primary" @click="edit" icon="el-icon-edit">编辑</el-button>
+                </div>
+            </div>
+            <div>
+                <div style="padding: 10px 0; text-align: center">
+                    <el-upload
+                            class="avatar-uploader"
+                            action="/files/upload"
+                            :show-file-list="false"
+                            :on-success="handleAvatarSuccess">
+                        <img v-if="user.avatar" :src="['/files/' + user.avatar]" class="avatar"
+                             style="width: 80px;height: 80px">
+                        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                    </el-upload>
+                </div>
+                <div style="width: 300px; margin: 0 auto">
+                    <el-form>
+                        <el-form-item label-width="120px" style="margin: 0">
+                            <span class="el-icon-s-custom" slot="label"> 用户名：</span>
+                            <div>{{ user.username }}</div>
+                        </el-form-item>
+                        <el-form-item label-width="120px" style="margin: 0">
+                            <span class="el-icon-user-solid" slot="label"> 昵称：</span>
+                            <div>{{ user.nickName }}</div>
+                        </el-form-item>
+                        <el-form-item label-width="120px" style="margin: 0">
+                            <span class="el-icon-message" slot="label"> 邮箱：</span>
+                            <div>{{ user.email }}</div>
+                        </el-form-item>
+                        <el-form-item label-width="120px" style="margin: 0">
+                            <span class="el-icon-mobile-phone" slot="label"> 电话：</span>
+                            <div>{{ user.phone }}</div>
+                        </el-form-item>
+                        <el-form-item label-width="120px" style="margin: 0">
+                            <span class="el-icon-user-solid" slot="label"> 年龄：</span>
+                            <div>{{ user.age }}</div>
+                        </el-form-item>
+                        <el-form-item label-width="120px" style="margin: 0">
+                            <span class="el-icon-map-location" slot="label"> 地址：</span>
+                            <div>{{ user.address }}</div>
+                        </el-form-item>
+                    </el-form>
+                </div>
+            </div>
+        </el-card>
+
+        <el-dialog title="用户信息" :visible.sync="dialogFormVisible" append-to-body width="40%"
+                   close-on-click-modal="false" close-on-press-escape="false" show-close="false">
+            <el-form :model="user">
+                <el-form-item label-width="100px">
+                    <span class="el-icon-user-solid" slot="label"> 昵称 </span>
+                    <el-input v-model="entity.nickName" autocomplete="off" style="width: 80%"></el-input>
+                </el-form-item>
+                <el-form-item label-width="100px">
+                    <span class="el-icon-message" slot="label"> 邮箱 </span>
+                    <el-input v-model="entity.email" autocomplete="off" style="width: 80%"></el-input>
+                </el-form-item>
+                <el-form-item label-width="100px">
+                    <span class="el-icon-mobile-phone" slot="label"> 电话 </span>
+                    <el-input v-model="entity.phone" autocomplete="off" style="width: 80%"></el-input>
+                </el-form-item>
+                <el-form-item label-width="100px">
+                    <span class="el-icon-user-solid" slot="label"> 出生日期 </span>
+                    <!--                    <el-input v-model="" autocomplete="off" style="width: 80%"></el-input>-->
+                    <el-date-picker
+                            v-model="age"
+                            type="date"
+                            placeholder="选择日期">
+                    </el-date-picker>
+                </el-form-item>
+                <el-form-item label-width="100px">
+                    <span class="el-icon-map-location" slot="label"> 地址 </span>
+                    <el-input v-model="entity.address" autocomplete="off" style="width: 80%"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                <el-button type="primary" @click="save">确 定</el-button>
+            </div>
+        </el-dialog>
+
+    </el-drawer>
+    <el-dialog title="修改密码" :visible.sync="dialogFormVisibleWrapper" append-to-body width="40%"
+               close-on-click-modal="false" close-on-press-escape="false" show-close="false">
+        <el-form>
+            <el-form-item label-width="100px">
+                <span class="el-icon-key" slot="label"> 旧密码 </span>
+                <el-input show-password v-model="user.password" autocomplete="off"
+                          style="width: 80%" :placeholder="oldMsg"></el-input>
+            </el-form-item>
+            <el-form-item label-width="100px">
+                <span class="el-icon-lock" slot="label"> 新密码 </span>
+                <el-input show-password v-model="user.newPassword" autocomplete="off"
+                          style="width: 80%" :placeholder="newMsg"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="cancelChange">取 消</el-button>
+            <el-button type="primary" @click="changePassword">确 定</el-button>
+        </div>
+    </el-dialog>
+</div>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/vue.min.js"></script>
+<script src="../../js/element.js"></script>
+
+<script>
+    function call() {
+        vm.user = JSON.parse(sessionStorage.getItem("user"))
+    }
+
+    function changeIndex(index) {
+        vm.src = index
+        location.search = "target=" + index
+        window.setInterval("reinitIframe()", 50);
+    }
+
+    // 实现 iframe  高度自适应
+    function reinitIframe() {
+        const iframe = document.getElementById("myiframe");
+        try {
+            const bHeight = iframe.contentWindow.document.body.scrollHeight;
+            const dHeight = iframe.contentWindow.document.documentElement.scrollHeight;
+            iframe.height = Math.max(bHeight, dHeight, (window.innerHeight - 105));
+        } catch (ex) {
+        }
+    }
+
+
+    window.setInterval("reinitIframe()", 50);
+
+    let vm = new Vue({
+        el: "#wrapper",
+        data: {
+            src: 'index',
+            active: 0,
+            user: {},
+            isCollapse: false,
+            loading: false,
+            dialogFormVisibleWrapper: false,
+        },
+        created() {
+            this.user = sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : {};
+            if (location.search) {
+                this.src = getUrlParamValue('target')
+            }
+            $.get("/api/user/detail/" + this.user.username).then(res => {
+                this.user = res.data;
+                console.log(this.user)
+            })
+        },
+        methods: {
+            handleSelect(key) {
+                this.src = key
+                location.search = "target=" + this.src
+                window.setInterval("reinitIframe()", 50);
+            },
+            handleCollapse() {
+                this.isCollapse = !this.isCollapse;
+            },
+            logout() {
+                $.get("/api/user/logout");
+                sessionStorage.removeItem("user");
+                location.href = "/page/end/login.html";
+            }
+        }
+    })
+
+    let per = new Vue({
+        el: "#person",
+        data: {
+            user: {},
+            isCollapse: false,
+            entity: {},
+            dialogFormVisible: false,
+            dialogFormVisibleWrapper: false,
+            drawer: false,
+            direction: 'rtl',
+            oldMsg: "*请输入原密码",
+            newMsg: "*由数字、字母和符号组成，长度为6-20位",
+            size: '',
+            props: [{"label": "用户名", "prop": "username"}, {"label": "邮箱", "prop": "email"}, {
+                "label": "电话",
+                "prop": "phone"
+            }],
+            age: "",
+        },
+        created() {
+            this.user = sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : {};
+            this.load();
+        },
+        methods: {
+            cancelChange() {
+                this.user.password = "";
+                this.user.newPassword = "";
+                this.dialogFormVisibleWrapper = false;
+            },
+            changePassword() {
+                var p = /^\S{6,20}$/;
+                var sp = /^[0-9]{6,20}$/;
+                if (!this.user.newPassword) {
+                    this.$message({
+                        message: "请输入新密码",
+                        type: "error"
+                    });
+                    return;
+                }
+                if (!this.user.newPassword.match(p)) {
+                    this.$message({
+                        message: "密码格式不规范",
+                        type: "error"
+                    });
+                    return;
+                }
+                if (this.user.newPassword.match(sp)) {
+                    this.$message({
+                        message: "密码太简单了哦，加上字母试试吧",
+                        type: "error"
+                    });
+                    return;
+                }
+                $.ajax({
+                    url: "/api/user/changePassword",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(this.user)
+                }).then(res => {
+                    if (res.code === '0') {
+                        this.$message({
+                            message: "修改成功",
+                            type: "success"
+                        });
+                        this.load();
+                    } else {
+                        this.$message({
+                            message: res.msg,
+                            type: "error"
+                        })
+                    }
+                    this.user.password = "";
+                    // this.user.newPassword = "";
+                    // this.dialogFormVisibleWrapper = false;
+                })
+            },
+            handleAvatarSuccess(res) {
+                console.log(this.user.nickName);
+                if(this.user.nickName==null){
+                    this.$message({
+                        message: "请先填写好个人信息哦",
+                        type: "error",
+                    });
+                    return;
+                }
+                this.entity = JSON.parse(JSON.stringify(this.user))
+                this.entity.avatar = res.data
+                this.save()
+            },
+            logout() {
+                $.get("/api/user/logout");
+                sessionStorage.removeItem("user");
+                location.href = "/page/end/login.html";
+            },
+            handleCollapse() {
+                this.isCollapse = !this.isCollapse;
+            },
+            edit() {
+                this.entity = JSON.parse(JSON.stringify(this.user))
+                this.dialogFormVisible = true;
+            },
+            load() {
+                $.get("/api/user/detail/" + this.user.username).then(res => {
+                    this.user = res.data;
+                })
+            },
+            save() {
+                var e = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+                var p = /^[0-9]{11,11}$/;
+                var n = /^[A-Za-z0-9\u4e00-\u9fa5_-]{1,10}$/
+                this.entity.password = this.user.password;
+                console.log(this.entity);
+                console.log(this.user);
+                if (!this.entity.nickName.match(n)) {
+                    this.$message({
+                        message: "昵称不规范",
+                        type: "error"
+                    });
+                    return;
+                }
+                if (!this.entity.email.match(e)) {
+                    this.$message({
+                        message: "邮箱格式不匹配",
+                        type: "error"
+                    });
+                    return;
+                }
+                if (!this.entity.phone.match(p)) {
+                    this.$message({
+                        message: "手机号码需要11位哦",
+                        type: "error"
+                    });
+                    return;
+                }
+                if(this.age===""){
+                    this.entity.age = this.user.age;
+                }else {
+                    var times = new Date();
+                    this.entity.age = times.getFullYear() - this.age.getFullYear();
+                    if (times.getMonth() < this.age.getMonth()
+                        || times.getMonth() == this.age.getMonth()
+                        && times.getDate() < this.age.getDate()) {
+                        this.entity.age--;
+                    }
+                    if(this.entity.age<=0){
+                        this.$message({
+                            message: "请输入正确的出生日期",
+                            type: "error"
+                        });
+                        return;
+                    }
+                }
+                $.ajax({
+                    url: "/api/user",
+                    type: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify(this.entity)
+                }).then(res => {
+                    if (res.code === '0') {
+                        this.$message({
+                            message: "保存成功",
+                            type: "success"
+                        });
+                        this.load();
+                    } else {
+                        this.$message({
+                            message: res.msg,
+                            type: "error"
+                        })
+                    }
+                    this.dialogFormVisible = false;
+                    vm.user.nickName = this.entity.nickName;
+                    vm.user.avatar = this.entity.avatar;
+                })
+            },
+        }
+    })
+
+    /**
+     * 获取url参数
+     * @param name
+     * @returns {string|null}
+     */
+    function getUrlParamValue(name) {
+        if (name == null || name === 'undefined') {
+            return '';
+        }
+        let searchStr = decodeURI(location.search);
+        let infoIndex = searchStr.indexOf(name + "=");
+        if (infoIndex === -1) {
+            return null;
+        }
+        let searchInfo = searchStr.substring(infoIndex + name.length + 1);
+        let tagIndex = searchInfo.indexOf("&");
+        if (tagIndex !== -1) {
+            searchInfo = searchInfo.substring(0, tagIndex);
+        }
+        return searchInfo;
+    }
+</script>
+</body>
+</html>
+

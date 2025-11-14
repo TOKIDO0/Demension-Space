@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>维度空间 - 部署助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #3a3a3a;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        h2 {
+            color: #555;
+            margin: 30px 0 15px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input[type="text"],
+        input[type="url"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .config-form {
+            background-color: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button.secondary {
+            background-color: #f44336;
+        }
+        
+        button.secondary:hover {
+            background-color: #d32f2f;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .code-block {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .note {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>维度空间 - 部署助手</h1>
+        
+        <div class="section">
+            <h2>📋 部署前准备</h2>
+        </div>
+        
+
+        
+        <div class="section">
+            <h2>2️⃣ 本地测试</h2>
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p>点击下方按钮启动本地预览，测试网站功能。</p>
+                    <button id="preview-site">预览网站</button>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p>测试联系表单功能。表单数据将保存在本地存储中。</p>
+                    <button id="test-form">测试表单提交</button>
+                    <button id="view-data">查看已保存的数据</button>
+                </div>
+            </div>
+            <div id="local-data-section" style="display: none; margin-top: 20px;">
+                <h3>本地存储的数据</h3>
+                <div class="code-block" id="local-data-output">{}</div>
+            </div>
+        </div>
+        
+
+        
+        <div class="section">
+            <h2>4️⃣ 部署指南</h2>
+            <p>完成上述配置后，您可以使用以下方法部署网站：</p>
+            
+            
+            
+            
+            <div class="step">
+                <div class="step-number">B</div>
+                <div class="step-content">
+                    <p><strong>方法二：使用其他托管服务</strong></p>
+                    <p>您也可以使用 Netlify、Vercel、GitHub Pages 等其他服务部署静态文件。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="status" id="status-message"></div>
+    </div>
+    
+    <script>
+        
+        
+        
+        
+        
+        
+        
+        
+        // 预览网站
+        document.getElementById('preview-site').addEventListener('click', function() {
+            window.open('index.html', '_blank');
+        });
+        
+        // 测试表单提交
+        document.getElementById('test-form').addEventListener('click', function() {
+            const testData = {
+                name: '测试用户',
+                phone: '13800138000',
+                message: '这是一条测试消息',
+                test_timestamp: new Date().toLocaleString()
+            };
+            
+            // 获取现有数据或创建新数组
+            let savedSubmissions = JSON.parse(localStorage.getItem('saved_form_submissions') || '[]');
+            savedSubmissions.push(testData);
+            localStorage.setItem('saved_form_submissions', JSON.stringify(savedSubmissions));
+            
+            showStatus('测试数据已成功保存到本地存储！', 'success');
+        });
+        
+        // 查看本地数据
+        document.getElementById('view-data').addEventListener('click', function() {
+            const savedSubmissions = JSON.parse(localStorage.getItem('saved_form_submissions') || '[]');
+            const dataSection = document.getElementById('local-data-section');
+            const dataOutput = document.getElementById('local-data-output');
+            
+            if (savedSubmissions.length === 0) {
+                dataOutput.textContent = '暂无保存的数据';
+            } else {
+                dataOutput.textContent = JSON.stringify(savedSubmissions, null, 2);
+            }
+            
+            dataSection.style.display = 'block';
+            dataSection.scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        
+        
+        // 显示状态消息
+        function showStatus(message, type) {
+            const status = document.getElementById('status-message');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+        
+        
+    </script>
+</body>
+</html>
