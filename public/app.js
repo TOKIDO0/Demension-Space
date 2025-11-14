@@ -3,9 +3,8 @@ console.log('app.js 加载成功');
 
 const API_BASE = '';
 const SUPABASE_URL = 'https://afrasbvtsucsmddcdusi.supabase.co';
-let SUPABASE_ANON_KEY = localStorage.getItem('supabase_anon_key') || '';
-function setSupabaseAnonKey(k){ SUPABASE_ANON_KEY = k; localStorage.setItem('supabase_anon_key', k); }
-function getSupabaseClient(){ try { if (!window.supabase || !SUPABASE_URL || !SUPABASE_ANON_KEY) return null; return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(_) { return null; } }
+let SUPABASE_ANON_KEY = (typeof window !== 'undefined' && window.SUPABASE_ANON_KEY) ? window.SUPABASE_ANON_KEY : '';
+function getSupabaseClient(){ try { const url = (typeof window !== 'undefined' && window.SUPABASE_URL) ? window.SUPABASE_URL : SUPABASE_URL; if (!window.supabase || !url || !SUPABASE_ANON_KEY) return null; return window.supabase.createClient(url, SUPABASE_ANON_KEY); } catch(_) { return null; } }
 const PREVIEW_MODE = false;
 const FRONTEND_ONLY = !API_BASE;
 
@@ -83,10 +82,10 @@ function hideLoadingIndicator() {
 // 全局变量存储用户信息
 let currentUser = null;
 
-function loadUsers() { try { return JSON.parse(localStorage.getItem('users') || '{}'); } catch (_) { return {}; } }
-function saveUsers(u) { localStorage.setItem('users', JSON.stringify(u)); }
-function saveSession(u) { localStorage.setItem('current_user', JSON.stringify(u)); }
-function loadSession() { try { return JSON.parse(localStorage.getItem('current_user') || 'null'); } catch (_) { return null; } }
+function loadUsers() { return {}; }
+function saveUsers(u) { }
+function saveSession(u) { }
+function loadSession() { return null; }
 
 function highlightSection(sectionId, duration = 1500) {
     const el = document.getElementById(sectionId);
@@ -119,16 +118,9 @@ async function updateUserProfile(patch) {
             const data = { nick_name: payload.nickName ?? currentUser.nickName, phone: payload.phone ?? currentUser.phone, avatar_url: payload.avatar ?? currentUser.avatar };
             const r = await sb.auth.updateUser({ data });
             if (r.error) throw new Error(r.error.message || '保存失败');
-            Object.assign(currentUser, patch);
-            saveSession(currentUser);
-            updateUIForLoggedInState();
-            return { code: '0', msg: '成功' };
-        } else if (FRONTEND_ONLY) {
-            Object.assign(currentUser, patch);
-            saveSession(currentUser);
-            const users = loadUsers();
-            const u = users[currentUser.email];
-            if (u) { Object.assign(u, patch); users[currentUser.email] = u; saveUsers(users); }
+            const u2 = r.data.user;
+            const m2 = u2.user_metadata || {};
+            currentUser = { id: u2.id, email: u2.email, username: u2.email.split('@')[0], avatar: m2.avatar_url || currentUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u2.email.split('@')[0])}&background=random`, nickName: m2.nick_name || currentUser?.nickName || u2.email.split('@')[0], phone: m2.phone || currentUser?.phone || '' };
             updateUIForLoggedInState();
             return { code: '0', msg: '成功' };
         } else {
@@ -149,15 +141,6 @@ async function changeUserPassword(oldPwd, newPwd) {
             if (re.error) throw new Error('密码错误');
             const r = await sb.auth.updateUser({ password: newPwd });
             if (r.error) throw new Error(r.error.message || '修改密码失败');
-            return { code: '0', msg: '成功' };
-        } else if (FRONTEND_ONLY) {
-            const users = loadUsers();
-            const u = users[currentUser.email];
-            if (!u) throw new Error('用户不存在');
-            const ok = await bcrypt.compare(oldPwd, u.passwordHash);
-            if (!ok) throw new Error('密码错误');
-            u.passwordHash = await bcrypt.hash(newPwd, 10);
-            saveUsers(users);
             return { code: '0', msg: '成功' };
         } else {
             throw new Error('后端未配置');
@@ -224,19 +207,6 @@ async function uploadAvatarAndSave(file) {
             const profileAvatar = document.getElementById('profile-avatar');
             if (profileAvatar) profileAvatar.src = url;
             currentUser.avatar = url;
-            return url;
-        } else if (FRONTEND_ONLY) {
-            const reader = new FileReader();
-            const url = await new Promise((resolve, reject) => { reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(blob); });
-            await updateUserProfile({ avatar: url });
-            const userAvatarImg = document.querySelector('#user-avatar img');
-            if (userAvatarImg) userAvatarImg.src = url;
-            const profileAvatar = document.getElementById('profile-avatar');
-            if (profileAvatar) profileAvatar.src = url;
-            currentUser.avatar = url;
-            const users = loadUsers();
-            const u = users[currentUser.email];
-            if (u) { u.avatar = url; saveUsers(users); }
             return url;
         } else {
             throw new Error('后端未配置');
@@ -851,13 +821,9 @@ function updateUIForLoggedInState() {
 // 登出用户函数
 function logoutUser() {
     try {
-        if (!FRONTEND_ONLY) {
-            (async () => {
-                try { await fetch(`${API_BASE}/api/user/logout`, { method: 'GET', credentials: 'include' }); } catch(_) {}
-            })();
-        }
+        const sb = getSupabaseClient();
+        if (sb) { (async () => { try { await sb.auth.signOut(); } catch(_) {} })(); }
         currentUser = null;
-        localStorage.removeItem('current_user');
         updateUIForLoggedInState();
         showModal('auth-modal');
     } catch (error) {
@@ -2444,10 +2410,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 document.addEventListener('DOMContentLoaded', async function() {
-    if (!SUPABASE_ANON_KEY) {
-        const k = window.prompt('请输入 Supabase anon key（仅用于前端）');
-        if (k && k.trim()) { setSupabaseAnonKey(k.trim()); location.reload(); return; }
-    }
+    try {
+        const resp = await fetch('/api/config');
+        if (resp.ok) {
+            const cfg = await resp.json();
+            if (cfg.supabaseUrl && cfg.supabaseAnonKey) {
+                window.SUPABASE_URL = cfg.supabaseUrl;
+                SUPABASE_ANON_KEY = cfg.supabaseAnonKey;
+            }
+        }
+    } catch(_) {}
     const sb = getSupabaseClient();
     if (sb) {
         const r = await sb.auth.getUser();
