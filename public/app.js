@@ -3,7 +3,7 @@ console.log('app.js 加载成功');
 
 const API_BASE = '';
 const SUPABASE_URL = 'https://afrasbvtsucsmddcdusi.supabase.co';
-let SUPABASE_ANON_KEY = (typeof window !== 'undefined' && window.SUPABASE_ANON_KEY) ? window.SUPABASE_ANON_KEY : '';
+let SUPABASE_ANON_KEY = (typeof window !== 'undefined' && window.SUPABASE_ANON_KEY) ? window.SUPABASE_ANON_KEY : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmcmFzYnZ0c3Vjc21kZGNkdXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3OTkzMDgsImV4cCI6MjA3ODM3NTMwOH0.CBeNwfTUNs1gPwhgiDDvP1N1B1_Lzya8fnYJzDSwbdM';
 function getSupabaseClient(){ try { const url = (typeof window !== 'undefined' && window.SUPABASE_URL) ? window.SUPABASE_URL : SUPABASE_URL; if (!window.supabase || !url || !SUPABASE_ANON_KEY) return null; return window.supabase.createClient(url, SUPABASE_ANON_KEY); } catch(_) { return null; } }
 const PREVIEW_MODE = false;
 const FRONTEND_ONLY = !API_BASE;
@@ -2429,8 +2429,35 @@ document.addEventListener('DOMContentLoaded', async function() {
             currentUser = { id: u.id, email: u.email, username: u.email.split('@')[0], avatar: m.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.email.split('@')[0])}&background=random`, nickName: m.nick_name || u.email.split('@')[0], phone: m.phone || '' };
             updateUIForLoggedInState();
         }
+        try { await initWorksImages(sb); } catch(_) {}
     }
 });
+
+async function initWorksImages(sbClient) {
+    const sb = sbClient || getSupabaseClient();
+    if (!sb) return;
+    const selectors = Array.from(document.querySelectorAll('.works-grid .work-item img')).slice(0,4);
+    const localFiles = [
+        'images/AI 记账 APP 原型设计 (1).png',
+        'images/AI 记账 APP 原型设计 (2).png',
+        'images/AI 记账 APP 原型设计 (3).png',
+        'images/AI 记账 APP 原型设计.png'
+    ];
+    for (let i = 0; i < Math.min(selectors.length, localFiles.length); i++) {
+        const imgEl = selectors[i];
+        const path = localFiles[i];
+        try {
+            const resp = await fetch(path);
+            if (!resp.ok) continue;
+            const blob = await resp.blob();
+            const name = `works/${Date.now()}-${i}.png`;
+            const up = await sb.storage.from('avatars').upload(name, blob, { upsert: true });
+            if (up.error) continue;
+            const signed = await sb.storage.from('avatars').createSignedUrl(name, 60 * 60 * 24 * 7);
+            if (signed?.data?.signedUrl && imgEl) imgEl.src = signed.data.signedUrl;
+        } catch (_) { }
+    }
+}
 function runCoreUnitTests() {
     const results = [];
     const assert = (name, ok) => results.push({ name, ok });
