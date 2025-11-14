@@ -730,11 +730,11 @@ async function handleLogin() {
             const u = r.data.user;
             const m = u.user_metadata || {};
             currentUser = { id: u.id, email: u.email, username: u.email.split('@')[0], avatar: m.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.email.split('@')[0])}&background=random`, nickName: m.nick_name || u.email.split('@')[0], phone: m.phone || '' };
-            saveSession(currentUser);
             updateUIForLoggedInState();
             hideModal('auth-modal');
             clearAuthForms();
             clearAuthError();
+            document.body.style.overflow = '';
             showUserSettingsModal();
             return;
         }
@@ -2007,13 +2007,15 @@ async function handleContactFormSubmit(event) {
     showLoadingIndicator();
     
     try {
-        const savedSubmissions = JSON.parse(localStorage.getItem('saved_form_submissions') || '[]');
-        savedSubmissions.push({ name, phone, message, created_at: new Date().toISOString() });
-        localStorage.setItem('saved_form_submissions', JSON.stringify(savedSubmissions));
-        alert('提交成功！我们会尽快联系您');
+        const sb = getSupabaseClient();
+        if (!sb) { alert('服务暂不可用，请稍后再试'); return; }
+        const u = await sb.auth.getUser();
+        if (u.error || !u.data?.user?.email) { alert('请先登录后再提交信息'); return; }
+        const resp = await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, phone, message, from: u.data.user.email }) });
+        if (!resp.ok) { const j = await resp.json().catch(()=>({})); alert(j?.error || '发送失败，请稍后重试'); return; }
+        alert('已发送，我们会尽快联系您');
         event.target.reset();
     } finally {
-        // 隐藏加载状态指示器
         hideLoadingIndicator();
     }
 }
