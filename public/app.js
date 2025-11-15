@@ -2495,3 +2495,10 @@ function runCoreUnitTests() {
 if (location.search.includes('runTests')) {
     setTimeout(runCoreUnitTests, 500);
 }
+
+try {
+    var si = document.createElement('script');
+    si.src = '/_vercel/speed-insights/script.js';
+    si.defer = true;
+    document.body.appendChild(si);
+} catch (_) {}
