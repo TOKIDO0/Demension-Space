@@ -54,16 +54,16 @@ const ProjectModal = ({ project, onClose }) => {
       />
 
       {/* 2. 主体容器 */}
-      <div className="relative w-full h-full flex flex-col md:flex-row animate-in fade-in zoom-in-95 duration-500" style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0}}>
+      <div className="relative w-full h-full flex flex-col md:flex-row animate-in fade-in zoom-in-95 duration-500">
         
         {/* 左侧: 沉浸式视觉区 (图片) */}
-        <div className="relative w-full md:w-[75%] h-full bg-transparent flex items-center justify-center p-4 md:p-12 group select-none" style={{position: 'relative', height: '100vh', overflow: 'hidden'}}>
+        <div className="relative w-full md:w-[75%] h-full bg-transparent flex items-center justify-center p-4 md:p-12 group select-none" style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
           {images.length > 0 ? (
             <img 
               src={images[currentImgIdx]} 
               alt={project.title} 
-              className="max-w-full max-h-[85vh] object-contain shadow-2xl shadow-black/50"
-              style={{maxWidth: '90%', maxHeight: '85vh', objectFit: 'contain'}}
+              className="max-w-full max-h-[80vh] object-contain shadow-2xl shadow-black/50"
+              style={{maxWidth: '90%', maxHeight: '80vh', objectFit: 'contain', display: 'block'}}
             />
           ) : (
             <div className="text-gray-600 font-light tracking-widest">NO VISUAL</div>
@@ -99,26 +99,26 @@ const ProjectModal = ({ project, onClose }) => {
         </div>
 
         {/* 右侧: 信息流 */}
-        <div className="relative w-full md:w-[25%] h-full bg-[#0a0a0a] border-l border-white/5 flex flex-col p-8 md:p-12 overflow-y-auto" style={{position: 'relative', height: '100vh', overflowY: 'auto'}}>
+        <div className="relative w-full md:w-[25%] h-full bg-[#0a0a0a] border-l border-white/5 flex flex-col p-8 md:p-12 overflow-y-auto" style={{minHeight: '100vh', maxHeight: '100vh', position: 'relative'}}>
           <button 
             onClick={onClose} 
             className="absolute top-6 right-6 z-50 text-white/40 hover:text-white hover:bg-white/10 transition-all duration-300 text-5xl font-thin leading-none cursor-pointer rounded-full w-12 h-12 flex items-center justify-center"
-            style={{zIndex: 9999, position: 'sticky', top: '24px', alignSelf: 'flex-end'}}
+            style={{zIndex: 9999}}
             title="关闭"
           >
             ×
           </button>
 
-          <div className="mt-12" style={{position: 'relative'}}>
+          <div className="mt-12 flex-shrink-0">
             <h2 className="text-2xl font-light text-white mb-2 leading-tight tracking-wide">{project.title}</h2>
             <div className="w-8 h-[1px] bg-gradient-to-r from-purple-500 to-cyan-500 mt-6 mb-8"></div>
           </div>
 
-          <div className="space-y-8 text-sm font-light text-gray-400 leading-7" style={{position: 'relative'}}>
+          <div className="space-y-8 text-sm font-light text-gray-400 leading-7 flex-shrink-0">
             <p>{project.description || "No description provided."}</p>
           </div>
 
-          <div className="mt-auto pt-12 space-y-4 text-xs tracking-[0.2em] text-gray-500 font-mono" style={{position: 'relative', marginTop: 'auto', paddingTop: '48px'}}>
+          <div className="mt-auto pt-12 space-y-4 text-xs tracking-[0.2em] text-gray-500 font-mono flex-shrink-0">
             <div className="flex justify-between border-b border-white/5 pb-2">
               <span>位置</span>
               <span className="text-gray-300">{project.location || "未填写"}</span>
