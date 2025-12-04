@@ -6,6 +6,7 @@
     <title>维度空间 - 装修设计工作室</title>
     <meta name="description" content="维度空间 - 创意展示平台">
     <link rel="stylesheet" href="styles.css">
+    <style>body{background:#0a0a14;color:#fff}</style>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- 移除重复的模块引用，避免加载冲突 -->
 </head>
@@ -24,18 +25,19 @@
             <a href="#home">首页</a>
             <a href="#works">作品</a>
             <a href="#about">关于我们</a>
+            <a href="#testimonials">用户评价</a>
             <a href="#contact">联系方式</a>
         </div>
         <div class="nav-actions">
             <button id="login-btn" class="login-btn glass-button">登录</button>
             <div id="user-avatar" class="user-avatar" style="display: none;">
-                <img src="https://picsum.photos/seed/user/40/40" alt="用户头像">
+                <img id="nav-user-avatar" class="avatar-img" src="" alt="avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.15);background:#222;" />
                 <div class="user-dropdown">
                     <a href="#" id="user-details-link">账户详情</a>
                     <a href="#" id="logout-link">登出</a>
                 </div>
             </div>
-            <button id="appointment-btn" class="contact-btn glass-button">预约咨询</button>
+            <a href="#contact" class="contact-btn glass-button">预约咨询</a>
         </div>
     </nav>
 
@@ -49,62 +51,15 @@
             </h1>
             <p class="tagline">探索无限可能的空间设计</p>
             <div class="cta-buttons">
-                <button id="browse-works-btn" class="primary-btn glass-button">浏览作品</button>
-                <button id="services-btn" class="secondary-btn glass-button">了解服务</button>
+                <a href="#works" id="browse-works-btn" class="primary-btn glass-button">浏览作品</a>
+                <a href="#contact" id="appointment-btn" class="contact-btn glass-button">预约咨询</a>
             </div>
         </section>
 
-        <!-- 作品展示区域 -->
-        <section id="works" class="works-section">
-            <h2 class="section-title">精选作品</h2>
-            <div class="works-grid">
-                <!-- 作品项1 -->
-                <div class="work-item">
-                    <div class="work-image">
-                        <img src="images/modern-livingroom.jpg" alt="现代简约风格客厅">
-                    </div>
-                    <div class="work-info">
-                        <h3>现代简约风格客厅</h3>
-                        <p>简约而不简单的设计理念，打造舒适宜居的生活空间</p>
-                    </div>
-                </div>
-                
-                <!-- 作品项2 -->
-                <div class="work-item">
-                    <div class="work-image">
-                        <img src="images/decorative-livingroom.jpg" alt="装饰风格客厅">
-                    </div>
-                    <div class="work-info">
-                        <h3>装饰风格客厅</h3>
-                        <p>华丽的装饰元素与精致的细节，营造优雅高贵的空间氛围</p>
-                    </div>
-                </div>
-                
-                <!-- 作品项3 -->
-                <div class="work-item">
-                    <div class="work-image">
-                        <img src="https://picsum.photos/seed/industrial-kitchen/600/400" alt="工业风厨房">
-                    </div>
-                    <div class="work-info">
-                        <h3>工业风厨房</h3>
-                        <p>粗犷与精致的碰撞，打造独特个性的烹饪空间</p>
-                    </div>
-                </div>
-
-                <!-- 作品项4 -->
-                <div class="work-item">
-                    <div class="work-image">
-                        <img src="https://picsum.photos/seed/scandinavian-bedroom/600/400" alt="北欧风格卧室">
-                    </div>
-                    <div class="work-info">
-                        <h3>北欧风格卧室</h3>
-                        <p>轻盈通透的设计，自然光线与简约家具的完美结合</p>
-                    </div>
-                </div>
-            </div>
-            <div class="more-projects">
-                <button class="glass-button" id="more-projects-btn">更多项目</button>
-            </div>
+        <!-- 作品展示区域 (React 挂载点) -->
+        <section id="works" class="works-section" style="display: block !important; visibility: visible !important; min-height: 600px; background: transparent !important;">
+            <!-- React 组件挂载点 - 初始显示，让 React 组件自己处理加载状态 -->
+            <div id="portfolio-root" style="display: block; visibility: visible; opacity: 1; min-height: 600px;"></div>
         </section>
 
         <!-- 关于我们区域 -->
@@ -120,6 +75,25 @@
             </div>
         </section>
 
+        <!-- 客户评价板块挂载点 -->
+        <section id="testimonials">
+            <div id="testimonial-root">
+                <!-- 静态骨架屏 (消除加载延迟) -->
+                <section class="relative w-full min-h-[700px] bg-transparent overflow-hidden flex flex-col items-center justify-center py-20">
+                    <div class="relative z-20 text-center mb-16 px-4">
+                        <div class="flex items-center justify-center gap-2 mb-4"><span class="w-5 h-5 text-cyan-400 animate-pulse inline-block">⚡</span><span class="text-cyan-400 font-mono tracking-[0.3em] text-xs uppercase">System Feedback</span></div>
+                        <h2 class="text-4xl md:text-6xl font-black text-white tracking-tighter mb-4 drop-shadow-lg">信号 <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-cyan-500">回响</span></h2>
+                        <div class="mt-6 flex items-center justify-center"><button class="px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white text-sm font-medium shadow-[0_0_20px_rgba(168,85,247,0.35)] border border-white/10 backdrop-blur-md">添加评价</button></div>
+                    </div>
+                    <div class="relative w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 z-20">
+                        <div class="relative bg-white/5 rounded-2xl overflow-hidden h-[240px] animate-pulse border border-white/10"><div class="p-6 absolute bottom-0 w-full"><div class="h-4 w-1/2 bg-white/10 rounded mb-2"></div><div class="h-3 w-3/4 bg-white/10 rounded"></div></div></div>
+                        <div class="relative bg-white/5 rounded-2xl overflow-hidden h-[240px] animate-pulse border border-white/10"><div class="p-6 absolute bottom-0 w-full"><div class="h-4 w-1/2 bg-white/10 rounded mb-2"></div><div class="h-3 w-3/4 bg-white/10 rounded"></div></div></div>
+                        <div class="relative bg-white/5 rounded-2xl overflow-hidden h-[240px] animate-pulse border border-white/10"><div class="p-6 absolute bottom-0 w-full"><div class="h-4 w-1/2 bg-white/10 rounded mb-2"></div><div class="h-3 w-3/4 bg-white/10 rounded"></div></div></div>
+                    </div>
+                </section>
+            </div>
+        </section>
+
         <!-- 联系方式区域 -->
         <section id="contact" class="contact-section">
             <h2 class="section-title">联系我们</h2>
@@ -128,6 +102,8 @@
                     <p><strong>地址：</strong>新疆阿克苏新和县迎宾花园小区门面房</p>
                     <p><strong>电话：</strong>17772297239</p>
                     <p><strong>邮箱：</strong>1810266895@qq.com</p>
+                    <!-- 地图容器 -->
+                    <div id="map-container" style="width: 100%; height: 400px; margin-top: 30px; border-radius: 15px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"></div>
                 </div>
                 <form class="contact-form">
                     <input type="text" id="contact-name" placeholder="您的姓名" required>
@@ -207,67 +183,269 @@
 
     <!-- 登录/注册模态框 -->
     <div id="auth-modal" class="modal">
-        <div class="modal-content">
-            <h3 id="auth-modal-title">欢迎回来</h3>
+        <!-- 2. 核心卡片：毛玻璃效果，深色背景，发光边框 -->
+        <div class="modal-content auth-card">
+            <!-- 关闭按钮 (右上角) -->
+            <button id="close-auth-modal" class="close-auth-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
             
-            <!-- 登录表单 -->
-            <div id="login-form" class="auth-form">
-                <div class="form-group">
-                    <label for="login-email">邮箱</label>
-                    <input type="email" id="login-email" placeholder="请输入邮箱地址" required>
+            <div class="auth-card-inner">
+                <!-- 3. 标题区：渐变色文字 -->
+                <h3 id="auth-modal-title" class="auth-title">欢迎回来</h3>
+                <p class="auth-subtitle">登录维度空间</p>
+                
+                <!-- 登录表单 -->
+                <div id="login-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="login-email">邮箱地址</label>
+                        <input type="email" id="login-email" placeholder="name@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label for="login-password">密码</label>
+                            <a href="#" id="forgot-password-link" class="forgot-link">忘记密码？</a>
+                        </div>
+                        <input type="password" id="login-password" placeholder="••••••••" required>
+                    </div>
+                    
+                    <!-- 5. 登录按钮：全宽，醒目渐变 -->
+                    <button type="submit" id="login-submit-btn" class="auth-submit-btn">立即登录</button>
+                    
+                    <!-- 底部链接 -->
+                    <div class="form-footer">
+                        <span class="text-muted">还没有账号？</span>
+                        <a href="#" id="switch-to-register" class="text-link-bold">立即注册</a>
+                    </div>
+                </div>
+                
+                <!-- 注册表单 (保持结构一致) -->
+                <div id="register-form" class="auth-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="register-username">用户名</label>
+                        <input type="text" id="register-username" placeholder="请输入用户名" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">邮箱地址</label>
+                        <input type="email" id="register-email" placeholder="name@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-phone">手机号（选填）</label>
+                        <input type="tel" id="register-phone" placeholder="请输入手机号">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">密码</label>
+                        <input type="password" id="register-password" placeholder="请设置密码，至少8位" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-confirm-password">确认密码</label>
+                        <input type="password" id="register-confirm-password" placeholder="请再次输入密码" required>
+                    </div>
+                    
+                    <button type="submit" id="register-submit-btn" class="auth-submit-btn">立即注册</button>
+                    
+                    <div class="form-footer">
+                        <span class="text-muted">已有账号？</span>
+                        <a href="#" id="switch-to-login" class="text-link-bold">立即登录</a>
+                    </div>
+                </div>
+                
+                <!-- 错误消息区域 -->
+                <div id="auth-error" class="auth-error" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 个人资料模态框 -->
+    <div id="profile-modal" class="modal">
+        <div class="modal-content" style="position:relative;">
+            <button id="close-profile-modal" class="close-auth-icon" style="position:fixed;top:20px;right:24px;z-index:1002;">✕</button>
+            <h3>个人资料</h3>
+            <div class="services-list" style="display:grid;grid-template-columns:1fr;gap:12px;">
+                <div style="display:flex;align-items:center;gap:14px;">
+                    <img id="profile-avatar-preview" src="" alt="avatar" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.15)" />
+                    <div>
+                        <input type="file" id="profile-avatar" accept="image/*" style="display:none">
+                        <button id="profile-avatar-btn" class="glass-button" style="padding:8px 14px;border:1px solid rgba(168,85,247,0.35);background:linear-gradient(90deg, rgba(168,85,247,0.18), rgba(6,182,212,0.18));color:#fff;">更改头像</button>
+                        <div style="font-size:12px;color:#888;margin-top:6px;">建议使用清晰头像图片</div>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="login-password">密码</label>
-                    <input type="password" id="login-password" placeholder="请输入密码" required>
+                    <label for="profile-nick">姓名</label>
+                    <input type="text" id="profile-nick" placeholder="请输入姓名">
                 </div>
-                <div class="form-options">
-                    <label><input type="checkbox"> 记住我</label>
-                    <a href="#" id="forgot-password-link">忘记密码？</a>
+                <div class="form-group">
+                    <label for="profile-nickname">昵称</label>
+                    <input type="text" id="profile-nickname" placeholder="请输入昵称">
                 </div>
-                <button type="submit" id="login-submit-btn" class="auth-submit-btn glass-button">登录</button>
-                <div class="auth-switch">
-                    还没有账号？<a href="#" id="switch-to-register">立即注册</a>
+                <div class="form-group">
+                    <label for="profile-phone">电话</label>
+                    <input type="tel" id="profile-phone" placeholder="请输入电话">
+                </div>
+                <div class="form-group">
+                    <label for="profile-email">邮箱（不可编辑）</label>
+                    <input type="email" id="profile-email" placeholder="name@example.com" disabled style="opacity:0.6">
                 </div>
             </div>
-            
-            <!-- 注册表单 -->
-            <div id="register-form" class="auth-form" style="display: none;">
-                <div class="form-group">
-                    <label for="register-username">用户名</label>
-                    <input type="text" id="register-username" placeholder="请输入用户名" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-email">邮箱</label>
-                    <input type="email" id="register-email" placeholder="请输入邮箱地址" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-phone">手机号（选填）</label>
-                    <input type="tel" id="register-phone" placeholder="请输入手机号">
-                </div>
-                <div class="form-group">
-                    <label for="register-password">密码</label>
-                    <input type="password" id="register-password" placeholder="请设置密码，至少8位" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-confirm-password">确认密码</label>
-                    <input type="password" id="register-confirm-password" placeholder="请再次输入密码" required>
-                </div>
-                <button type="submit" id="register-submit-btn" class="auth-submit-btn glass-button">注册</button>
-                <div class="auth-switch">
-                    已有账号？<a href="#" id="switch-to-login">立即登录</a>
-                </div>
+            <div style="display:flex;gap:12px;justify-content:flex-end;">
+                <button id="save-profile-btn" class="glass-button">保存</button>
             </div>
-            
-            <!-- 错误消息区域 -->
-            <div id="auth-error" class="auth-error" style="display: none;"></div>
-            
-            <button id="close-auth-modal" class="close-modal-btn glass-button">关闭</button>
+        </div>
+    </div>
+
+    <!-- 作品详情模态框 -->
+    <div id="work-detail-modal" class="modal">
+        <div class="modal-content" id="work-detail-card">
+            <h3>作品详情</h3>
+            <div id="work-detail-body"></div>
+            <button id="close-work-detail" class="close-modal-btn glass-button">关闭</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=fix1"></script>
+    <script src="navbar-scroll.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- 百度地图 API - 使用 v2.0 版本（v3.0 可能不兼容） -->
+    <!-- 获取密钥：https://lbsyun.baidu.com/apiconsole/key -->
+    <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=jfvWkRaS03ugguI4feuoyygvgucI3Q7Y&callback=initBaiduMapCallback"></script>
+    <script>
+        // 地图 API 加载完成后的回调
+        window.initBaiduMapCallback = function() {
+            console.log('百度地图 API 加载完成，BMap 对象:', typeof BMap);
+            // API 加载完成后初始化地图
+            if (typeof window.initBaiduMap === 'function') {
+                setTimeout(window.initBaiduMap, 100);
+            } else {
+                console.warn('initBaiduMap 函数未找到，等待 app.js 加载...');
+                // 如果 app.js 还没加载，等待一下
+                setTimeout(() => {
+                    if (typeof window.initBaiduMap === 'function') {
+                        window.initBaiduMap();
+                    } else {
+                        console.error('initBaiduMap 函数仍未找到');
+                    }
+                }, 500);
+            }
+        };
+    </script>
+    <script type="text/babel" src="PortfolioSection.jsx" data-presets="env,react"></script>
+    <script type="text/babel" src="TestimonialSection.jsx" data-presets="env,react"></script>
+    <script type="text/babel">
+      function mountWhenReady(getComp, rootId, retries = 120) {
+        const el = document.getElementById(rootId);
+        if (!el) {
+          console.warn(`挂载点 #${rootId} 未找到`);
+          if (retries > 0) {
+            setTimeout(() => mountWhenReady(getComp, rootId, retries - 1), 50);
+          }
+          return;
+        }
+        const Comp = getComp();
+        if (typeof Comp === 'function') {
+          console.log(`正在挂载组件到 #${rootId}`);
+          try {
+            const root = ReactDOM.createRoot(el);
+            root.render(React.createElement(Comp));
+            console.log(`组件已成功挂载到 #${rootId}`);
+            
+            // 如果是作品板块，直接显示 React 组件
+            if (rootId === 'portfolio-root') {
+              // 立即显示，让 React 组件自己处理加载状态
+              el.style.display = 'block';
+              el.style.visibility = 'visible';
+              el.style.opacity = '1';
+              el.style.minHeight = '600px';
+              // 确保父容器也可见
+              const parentSection = el.closest('#works');
+              if (parentSection) {
+                parentSection.style.display = 'block';
+                parentSection.style.visibility = 'visible';
+              }
+            } else {
+              // 其他组件直接显示
+              el.style.display = 'block';
+              el.style.visibility = 'visible';
+              el.style.opacity = '1';
+            }
+          } catch (error) {
+            console.error(`挂载组件 ${rootId} 时出错:`, error);
+            // 如果挂载失败，保持显示但让组件自己处理错误状态
+            if (rootId === 'portfolio-root') {
+              el.style.display = 'block';
+            }
+          }
+        } else if (retries > 0) {
+          console.log(`等待组件 ${rootId} 加载... (剩余重试: ${retries})`);
+          setTimeout(() => mountWhenReady(getComp, rootId, retries - 1), 50);
+        } else {
+          console.error(`组件 ${rootId} 加载失败: window.${rootId === 'portfolio-root' ? 'PortfolioSection' : 'TestimonialSection'} 不是函数`);
+          // 如果组件加载失败，保持显示但让组件自己处理错误状态
+          if (rootId === 'portfolio-root') {
+            el.style.display = 'block';
+          }
+        }
+      }
+      // 作品与评价挂载，避免 Babel 异步导致的竞态
+      console.log('开始挂载 React 组件...');
+      mountWhenReady(() => window.PortfolioSection, 'portfolio-root');
+      mountWhenReady(() => window.TestimonialSection, 'testimonial-root');
+      
+      // 确保精选作品板块始终显示（多次检查，防止被其他脚本覆盖）
+      const ensurePortfolioVisible = () => {
+        const portfolioRoot = document.getElementById('portfolio-root');
+        const worksSection = document.getElementById('works');
+        if (portfolioRoot) {
+          portfolioRoot.style.display = 'block';
+          portfolioRoot.style.visibility = 'visible';
+          portfolioRoot.style.opacity = '1';
+          portfolioRoot.style.minHeight = '600px';
+          portfolioRoot.style.position = 'relative';
+          portfolioRoot.style.zIndex = '10';
+        }
+        if (worksSection) {
+          worksSection.style.display = 'block';
+          worksSection.style.visibility = 'visible';
+          worksSection.style.position = 'relative';
+          worksSection.style.zIndex = '10';
+        }
+      };
+      
+      // 立即执行一次
+      ensurePortfolioVisible();
+      
+      // 延迟执行，确保 React 组件挂载后仍然可见
+      setTimeout(ensurePortfolioVisible, 500);
+      setTimeout(ensurePortfolioVisible, 1000);
+      setTimeout(ensurePortfolioVisible, 2000);
+      
+      // 监听 DOM 变化，确保不会被其他脚本隐藏
+      const observer = new MutationObserver(() => {
+        ensurePortfolioVisible();
+      });
+      
+      setTimeout(() => {
+        const portfolioRoot = document.getElementById('portfolio-root');
+        const worksSection = document.getElementById('works');
+        if (portfolioRoot) {
+          observer.observe(portfolioRoot, { attributes: true, attributeFilter: ['style', 'class'] });
+        }
+        if (worksSection) {
+          observer.observe(worksSection, { attributes: true, attributeFilter: ['style', 'class'] });
+        }
+      }, 1000);
+      
+      const navReviews = document.querySelector('a[href="#testimonials"]');
+      if (navReviews) {
+        navReviews.addEventListener('click', (e) => {
+          e.preventDefault();
+          try { if (window.smoothScrollTo) window.smoothScrollTo('testimonials'); else location.hash = '#testimonials'; } catch(_) { location.hash = '#testimonials'; }
+        });
+      }
+    </script>
   </body>
 </html>

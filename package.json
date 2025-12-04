@@ -4,7 +4,10 @@
   "description": "维度空间 装修设计工作室网站",
   "main": "index.html",
   "scripts": {
-    "deploy": "firebase deploy"
+    "deploy": "firebase deploy",
+    "preview": "node open-preview.js",
+    "preview:frontend": "cd public && python -m http.server 3000 || python3 -m http.server 3000",
+    "preview:backend": "cd public/admin && python -m http.server 3001 || python3 -m http.server 3001"
   },
   "keywords": [
     "design",

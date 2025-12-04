@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>维度空间 | 核心控制台</title>
+    <!-- 引入样式 (绝对路径) -->
+    <link rel="stylesheet" href="/admin/admin.css">
+    <!-- 引入 Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 引入科幻字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- 动态背景层 -->
+    <div class="bg-layer">
+        <div class="star-field"></div>
+        <div class="nebula"></div>
+    </div>
+
+    <div class="admin-root">
+        
+        <!-- 1. 登录界面：能量黑石风格 -->
+        <div id="login-view" class="view-section">
+            <div class="login-container">
+                <!-- 光效装饰 -->
+                <div class="login-card-glass"></div>
+                <div class="login-content">
+                    <div class="holo-circle"></div>
+                    <div class="login-header">
+                        <h2 class="glitch-text" data-text="DIMENSION">DIMENSION</h2>
+                        <p class="subtitle">需要系统最高权限</p> <!-- 汉化 -->
+                    </div>
+                    <form id="login-form">
+                        <div class="input-group">
+                            <input type="email" id="email" required autocomplete="off">
+                            <label>操作员 ID (邮箱)</label> <!-- 汉化 -->
+                            <span class="bar"></span>
+                            <span class="highlight"></span>
+                        </div>
+                        <div class="input-group">
+                            <input type="password" id="password" required autocomplete="off">
+                            <label>访问代码 (密码)</label> <!-- 汉化 -->
+                            <span class="bar"></span>
+                            <span class="highlight"></span>
+                        </div>
+                        <button type="submit" id="login-btn" class="cyber-btn">
+                            <span class="btn-content">初始化神经连接</span> <!-- 汉化 -->
+                            <span class="btn-glitch"></span>
+                            <span id="login-loading" class="loading-spinner" style="display:none;"> [链路建立中...]</span>
+                        </button>
+                        <div id="login-error" class="error-msg"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 控制台：全息HUD风格 -->
+        <div id="dashboard-view" class="view-section" style="display: none;">
+            <header class="hud-header">
+                <div class="brand">
+                    <div class="brand-icon"></div>
+                    <span>DIMENSION OS <small>v2.0 CN</small></span>
+                </div>
+                <div class="hud-controls">
+                    <div class="user-status">
+                        <span class="indicator"></span>
+                        <span id="current-user-email">已连接</span> <!-- 汉化 -->
+                    </div>
+                    <button id="logout-btn" class="hud-btn-outline">断开连接</button> <!-- 汉化 -->
+                </div>
+            </header>
+
+            <main class="hud-main">
+                <div class="panel-container">
+                    <!-- 装饰边角 -->
+                    <div class="corner t-l"></div>
+                    <div class="corner t-r"></div>
+                    <div class="corner b-l"></div>
+                    <div class="corner b-r"></div>
+
+                    <div class="panel-header">
+                        <h3 class="panel-title">INCOMING TRANSMISSIONS // 客户留言信号</h3> <!-- 汉化 -->
+                        <div class="panel-actions">
+                            <div class="select-wrapper">
+                                <select id="status-filter">
+                                    <option value="all">所有频道 (ALL)</option>
+                                    <option value="unread">状态: 未读 (UNREAD)</option>
+                                    <option value="read">状态: 已读 (READ)</option>
+                                    <option value="replied">状态: 已回复 (REPLIED)</option>
+                                    <option value="important">仅显示重要</option>
+                                </select>
+                            </div>
+                            <button id="trash-btn" class="hud-btn-outline" title="查看回收站">回收站</button>
+                            <button id="refresh-btn" class="hud-btn-icon" title="刷新数据">
+                                <!-- 刷新图标SVG -->
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-scroll-area custom-scrollbar">
+                        <table class="holo-table">
+                            <thead>
+                                <tr>
+                                    <th>时间戳 (TIMESTAMP)</th>
+                                    <th>身份 ID</th>
+                                    <th>通讯频段 (电话)</th>
+                                    <th>信息载荷 (内容)</th>
+                                    <th>状态覆写</th>
+                                </tr>
+                            </thead>
+                            <tbody id="message-list">
+                                <!-- JS 注入数据 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+    </div>
+    
+    <!-- 引入逻辑 (绝对路径) -->
+    <script src="/admin/admin.js"></script>
+    <!-- 实时通知容器 -->
+    <div id="toast-notifications" class="toast-wrapper"></div>
+</body>
+</html>
