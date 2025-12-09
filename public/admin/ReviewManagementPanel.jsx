@@ -104,17 +104,17 @@ const ReviewManagementPanel = () => {
         }
         
         return {
-          id: r.id,
+        id: r.id,
           user: r.name || r.user_id || 'Anonymous',
           user_id: r.user_id,
           avatar: avatarUrl || ((r.name||'??').slice(0,2).toUpperCase()),
           avatarUrl: avatarUrl,
-          role: r.role || 'Client',
-          rating: r.rating || 5,
-          content: r.content || r.comment || '',
-          date: (r.created_at || '').slice(0,10),
-          status: r.is_hidden ? 'hidden' : 'active',
-          isPinned: !!r.is_pinned || !!r.pinned_at,
+        role: r.role || 'Client',
+        rating: r.rating || 5,
+        content: r.content || r.comment || '',
+        date: (r.created_at || '').slice(0,10),
+        status: r.is_hidden ? 'hidden' : 'active',
+        isPinned: !!r.is_pinned || !!r.pinned_at,
           projectImages: projectImages,
         };
       }));

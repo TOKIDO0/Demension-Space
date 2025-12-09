@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050505; /* 配合原图的深色背景 */
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #ffffff;
+        }
+
+        .stats-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            justify-content: space-around; /* 均匀分布四个模块 */
+            align-items: flex-start;
+            padding: 50px 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(0,0,0,0)); /* 模拟原图顶部的光感 */
+        }
+
+        .stat-item {
+            text-align: left;
+            width: 200px;
+        }
+
+        .number-wrapper {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+
+        .label {
+            font-size: 14px;
+            color: #888; /* 灰色文字 */
+            letter-spacing: 1px;
+        }
+
+        /* 无穷大符号 */
+        .infinity {
+            font-size: 56px; /* 稍微大一点以视觉平衡 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="stats-container">
+    <div class="stat-item">
+        <div class="number-wrapper">8 Year+</div>
+        <div class="label">从事室内设计</div>
+    </div>
+
+    <div class="stat-item">
+        <div class="number-wrapper">
+            <span class="counter" data-target="100">0</span>+
+        </div>
+        <div class="label">设计案例</div>
+    </div>
+
+    <div class="stat-item">
+        <div class="number-wrapper">
+            <span class="counter" data-target="40">0</span>+
+        </div>
+        <div class="label">可定制板块</div>
+    </div>
+
+    <div class="stat-item">
+        <div class="number-wrapper infinity">∞</div>
+        <div class="label">整体创意想法</div>
+    </div>
+</div>
+
+<script>
+    // 获取所有带有 'counter' 类的元素
+    const counters = document.querySelectorAll('.counter');
+
+    counters.forEach(counter => {
+        counter.innerText = '0'; // 初始化为 0
+
+        const updateCounter = () => {
+            // 获取目标值 (也就是 data-target 里的 100 和 40)
+            // 之所以在前面加 + 号，是为了把字符串转为数字
+            const target = +counter.getAttribute('data-target');
+            
+            // 获取当前显示的数字
+            const c = +counter.innerText;
+
+            // 计算每次增加的步长
+            // target / 50 意味着无论数字多大，都在大约 50 帧内完成
+            // 如果想让动画更快，把 50 改小；想更慢，把 50 改大
+            const increment = target / 50;
+
+            if (c < target) {
+                // 如果还没到目标值，继续加
+                // Math.ceil 向上取整，保证数字是整数
+                counter.innerText = Math.ceil(c + increment);
+                
+                // 每 20 毫秒执行一次 updateCounter
+                setTimeout(updateCounter, 20);
+            } else {
+                // 确保最后显示的数字精准等于目标值
+                counter.innerText = target;
+            }
+        };
+
+        // 启动动画
+        updateCounter();
+    });
+</script>
+
+</body>
+</html>

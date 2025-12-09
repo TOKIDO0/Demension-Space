@@ -261,26 +261,92 @@ async function compressImage(file, maxW = 512, maxH = 512, quality = 0.8) {
     });
 }
 
-// Toast 提示功能
-function showToast(message, type = 'success') {
-    const container = document.querySelector('.toast-container') || createToastContainer();
+// Toast 提示功能 - 深色主题风格
+function showToast(message, type = 'success', targetContainer = null) {
+    // 如果指定了目标容器，在容器内显示，否则在页面顶部显示
+    let container;
+    let isInForm = false;
+    
+    if (targetContainer) {
+        // 在指定容器内显示
+        container = targetContainer;
+        isInForm = true;
+        // 确保容器是相对定位
+        if (getComputedStyle(container).position === 'static') {
+            container.style.position = 'relative';
+        }
+    } else {
+        container = document.querySelector('.toast-container') || createToastContainer();
+    }
     
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
+    
+    if (isInForm) {
+        // 表单内的提示样式
+        toast.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid ${type === 'success' ? 'rgba(255, 77, 0, 0.3)' : 'rgba(239, 68, 68, 0.3)'};
+            color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            font-size: 13px;
+            animation: toastFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            z-index: 1000;
+            opacity: 0;
+            min-width: 240px;
+        `;
+    } else {
+        // 页面顶部的提示样式
+        toast.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid ${type === 'success' ? 'rgba(255, 77, 0, 0.3)' : 'rgba(239, 68, 68, 0.3)'};
+            color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            font-size: 14px;
+            animation: toastFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            min-width: 280px;
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px);
+        `;
+    }
+    
+    const icon = type === 'success' ? '✓' : '⚠';
+    const iconColor = type === 'success' ? '#ff4d00' : '#ef4444';
     toast.innerHTML = `
-        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-        <span>${message}</span>
+        <span style="color: ${iconColor}; font-size: 18px; font-weight: bold;">${icon}</span>
+        <span style="flex: 1;">${message}</span>
     `;
     
     container.appendChild(toast);
     
-    // 2秒后自动消失
+    // 强制重排以触发动画
+    toast.offsetHeight;
+    
+    // 2.5秒后自动消失
     setTimeout(() => {
-        toast.style.animation = 'toastFadeOut 0.3s ease forwards';
+        toast.style.animation = 'toastFadeOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards';
         toast.addEventListener('animationend', () => {
             toast.remove();
         });
-    }, 2000);
+    }, 2500);
 }
 
 function createToastContainer() {
@@ -428,7 +494,13 @@ async function handleContactFormSubmit(e) {
     
     const form = e.target;
     const submitBtn = form.querySelector('.submit-btn');
-    const originalBtnText = submitBtn.textContent;
+    if (!submitBtn) {
+        console.error('未找到提交按钮');
+        showToast('表单提交失败：未找到提交按钮', 'error');
+        return;
+    }
+    const submitBtnText = submitBtn.querySelector('span:last-child');
+    const originalBtnText = submitBtnText ? submitBtnText.textContent.trim() : submitBtn.textContent.trim();
     
     // 获取表单数据
     const name = form.querySelector('#contact-name').value.trim();
@@ -448,7 +520,11 @@ async function handleContactFormSubmit(e) {
     
     try {
         submitBtn.disabled = true;
-        submitBtn.textContent = '发送中...';
+        if (submitBtnText) {
+            submitBtnText.textContent = '发送中...';
+        } else {
+            submitBtn.textContent = '发送中...';
+        }
         
         const sb = getSupabaseClient();
         if (!sb) {
@@ -463,39 +539,51 @@ async function handleContactFormSubmit(e) {
             
         if (error) throw error;
         
-        // 发送 ntfy 推送通知（包含完整信息和时间）
-        try {
-            const now = new Date();
-            const timeStr = now.toLocaleString('zh-CN', { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit', 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: false 
-            });
-            const notificationMessage = `👤 姓名：${name}\n📞 电话：${phone}\n🕐 留言时间：${timeStr}\n\n📝 需求描述：\n${message}`;
-            await sendNtfyNotification(
-                'New Message',
-                notificationMessage,
-                'high',
-                'mail,phone'
-            );
-            console.log('NTFY 推送已发送');
-        } catch (ntfyError) {
-            console.error('NTFY 推送失败（不影响留言提交）:', ntfyError);
-            // 推送失败不影响留言提交
+        // 立即显示成功提示，不等待 NTFY 通知
+        const formContainer = form.closest('.p-8');
+        if (formContainer) {
+            showToast('发送成功，我们会尽快联系您', 'success', formContainer);
+        } else {
+            showToast('发送成功，我们会尽快联系您', 'success');
         }
-        
-        showToast('发送成功，我们会尽快联系您', 'success');
         form.reset();
+        
+        // 异步发送 ntfy 推送通知（不阻塞表单提交）
+        (async () => {
+            try {
+                const now = new Date();
+                const timeStr = now.toLocaleString('zh-CN', { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit', 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                });
+                const notificationMessage = `👤 姓名：${name}\n📞 电话：${phone}\n🕐 留言时间：${timeStr}\n\n📝 需求描述：\n${message}`;
+                await sendNtfyNotification(
+                    'New Message',
+                    notificationMessage,
+                    'high',
+                    'mail,phone'
+                );
+                console.log('NTFY 推送已发送');
+            } catch (ntfyError) {
+                console.error('NTFY 推送失败（不影响留言提交）:', ntfyError);
+                // 推送失败不影响留言提交
+            }
+        })();
         
     } catch (error) {
         console.error('发送失败:', error);
         showToast(error.message || '发送失败，请稍后重试', 'error');
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = originalBtnText;
+        if (submitBtnText) {
+            submitBtnText.textContent = originalBtnText;
+        } else {
+            submitBtn.textContent = originalBtnText;
+        }
     }
 }
 
@@ -551,154 +639,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        const loginBtn = document.getElementById('login-btn');
-        const authModal = document.getElementById('auth-modal');
-        const closeAuth = document.getElementById('close-auth-modal');
-        const loginForm = document.getElementById('login-form');
-        const loginSubmit = document.getElementById('login-submit-btn');
-        const registerForm = document.getElementById('register-form');
-        const registerSubmit = document.getElementById('register-submit-btn');
-        const toRegister = document.getElementById('switch-to-register');
-        const toLogin = document.getElementById('switch-to-login');
-        const logoutLink = document.getElementById('logout-link');
-        const userDetailsLink = document.getElementById('user-details-link');
-        const profileModal = document.getElementById('profile-modal');
-        const closeProfile = document.getElementById('close-profile-modal');
-        const saveProfile = document.getElementById('save-profile-btn');
-        const profileNick = document.getElementById('profile-nick');
-        const profileNickname = document.getElementById('profile-nickname');
-        const profilePhone = document.getElementById('profile-phone');
-        const profileAvatar = document.getElementById('profile-avatar');
-        const profileAvatarBtn = document.getElementById('profile-avatar-btn');
-        const profileAvatarPreview = document.getElementById('profile-avatar-preview');
-        const profileEmail = document.getElementById('profile-email');
-
-        if (loginBtn && authModal) {
-            loginBtn.addEventListener('click', () => { authModal.classList.add('active'); });
-        }
-        if (closeAuth && authModal) {
-            closeAuth.addEventListener('click', () => { authModal.classList.remove('active'); });
-        }
-        if (toRegister && toLogin && loginForm && registerForm) {
-            toRegister.addEventListener('click', (e) => { e.preventDefault(); loginForm.style.display = 'none'; registerForm.style.display = 'block'; });
-            toLogin.addEventListener('click', (e) => { e.preventDefault(); registerForm.style.display = 'none'; loginForm.style.display = 'block'; });
-        }
-        if (loginSubmit) {
-            loginSubmit.addEventListener('click', async (e) => {
-                e.preventDefault();
-                try {
-                    const sb = getSupabaseClient();
-                    if (!sb) throw new Error('数据库未连接');
-                    const email = document.getElementById('login-email').value.trim();
-                    const password = document.getElementById('login-password').value;
-                    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-                    if (error) throw error;
-                    currentUser = { id: data.user.id, email: data.user.email };
-                    saveSession(currentUser);
-                    updateUIForLoggedInState();
-                    if (authModal) authModal.classList.remove('active');
-                    showToast('登录成功', 'success');
-                } catch(err) {
-                    showToast('登录失败: ' + err.message, 'error');
-                }
-            });
-        }
-        const forgotLink = document.getElementById('forgot-password-link');
-        if (forgotLink) {
-            forgotLink.addEventListener('click', async (e) => {
-                e.preventDefault();
-                try {
-                    const sb = getSupabaseClient();
-                    const email = document.getElementById('login-email').value.trim();
-                    if (!email) throw new Error('请输入邮箱');
-                    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/' });
-                    if (error) throw error;
-                    showToast('重置邮件已发送，请查收', 'success');
-                } catch(err) { showToast('发送失败: ' + err.message, 'error'); }
-            });
-        }
-        if (registerSubmit) {
-            registerSubmit.addEventListener('click', async (e) => {
-                e.preventDefault();
-                try {
-                    const sb = getSupabaseClient();
-                    if (!sb) throw new Error('数据库未连接');
-                    const email = document.getElementById('register-email').value.trim();
-                    const password = document.getElementById('register-password').value;
-                    const confirm = document.getElementById('register-confirm-password').value;
-                    if (password !== confirm) throw new Error('两次密码不一致');
-                    const { data, error } = await sb.auth.signUp({ email, password });
-                    if (error) throw error;
-                    showToast('注册成功，请查收邮件并登录', 'success');
-                    registerForm.style.display = 'none';
-                    loginForm.style.display = 'block';
-                } catch(err) {
-                    showToast('注册失败: ' + err.message, 'error');
-                }
-            });
-        }
-        if (logoutLink) {
-            logoutLink.addEventListener('click', async (e) => { e.preventDefault(); try { const sb = getSupabaseClient(); if (sb) await sb.auth.signOut(); } finally { currentUser=null; saveSession(null); updateUIForLoggedInState(); showToast('已登出', 'success'); } });
-        }
-
-        if (userDetailsLink && profileModal) {
-            userDetailsLink.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const u = currentUser || {};
-                if (profileEmail) profileEmail.value = u.email || '';
-                try {
-                    const sb = getSupabaseClient();
-                    const { data } = await sb.from('user_profiles').select('nick_name,phone,avatar_url').eq('id', u.id).single();
-                    const nick = (data && data.nick_name) || u.nickName || '';
-                    const phone = (data && data.phone) || u.phone || '';
-                    const avatar = data && data.avatar_url;
-                    if (profileNick) profileNick.value = nick;
-                    if (profileNickname) profileNickname.value = nick;
-                    if (profilePhone) profilePhone.value = phone;
-                    if (profileAvatarPreview && avatar) profileAvatarPreview.src = avatar;
-                } catch(_) {}
-                if (profileModal) profileModal.classList.add('active');
-            });
-        }
-        if (closeProfile && profileModal) {
-            closeProfile.addEventListener('click', () => { profileModal.classList.remove('active'); });
-        }
-        if (profileAvatarBtn && profileAvatar) {
-            profileAvatarBtn.addEventListener('click', () => {
-                profileAvatar.click();
-            });
-        }
-        if (profileAvatar) {
-            profileAvatar.addEventListener('change', () => {
-                try {
-                    const f = profileAvatar.files && profileAvatar.files[0];
-                    if (f && profileAvatarPreview) {
-                        const url = URL.createObjectURL(f);
-                        profileAvatarPreview.src = url;
-                    }
-                } catch(_) {}
-            });
-        }
-        if (saveProfile) {
-            saveProfile.addEventListener('click', async () => {
-                try {
-                    const patch = {
-                        nickName: (profileNickname && profileNickname.value ? profileNickname.value.trim() : (profileNick && profileNick.value ? profileNick.value.trim() : undefined)),
-                        phone: profilePhone && profilePhone.value ? profilePhone.value.trim() : undefined
-                    };
-                    if (profileAvatar && profileAvatar.files && profileAvatar.files[0]) {
-                        await uploadAvatarAndSave(profileAvatar.files[0]);
-                    }
-                    if (patch.nickName !== undefined || patch.phone !== undefined) {
-                        await updateUserProfile(patch);
-                    }
-                    showToast('资料已保存', 'success');
-                    if (profileModal) profileModal.classList.remove('active');
-                } catch(err) { showToast('保存失败: ' + err.message, 'error'); }
-            });
-        }
-
-        updateUIForLoggedInState();
+        // 登录相关功能已移除 - 前台页面不需要登录功能
     } catch(_) {}
 });
 
@@ -765,9 +706,13 @@ async function openWorkDetail(id) {
                 </div>
             </div>
         `;
-        modal.classList.add('active');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
         const closeBtn = document.getElementById('close-work-detail');
-        closeBtn.onclick = () => { modal.classList.remove('active'); };
+        closeBtn.onclick = () => { 
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
         const onMove = (e) => {
             const rect = card.getBoundingClientRect();
             const cx = rect.left + rect.width/2; const cy = rect.top + rect.height/2;
@@ -775,7 +720,12 @@ async function openWorkDetail(id) {
             card.style.transform = `translateZ(0) rotateX(${dy*-8}deg) rotateY(${dx*8}deg)`;
         };
         window.addEventListener('mousemove', onMove);
-        closeBtn.addEventListener('click', () => { window.removeEventListener('mousemove', onMove); card.style.transform='none'; });
+        closeBtn.addEventListener('click', () => { 
+            window.removeEventListener('mousemove', onMove); 
+            card.style.transform='none';
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        });
 
         let idx = 0; const imgEl = document.getElementById('work-slide-img');
         const prev = document.getElementById('work-prev'); const next = document.getElementById('work-next');
@@ -783,11 +733,18 @@ async function openWorkDetail(id) {
         if (prev) prev.onclick = () => show(idx-1);
         if (next) next.onclick = () => show(idx+1);
         let timer = null; if (images.length>1) { timer = setInterval(() => show(idx+1), 3000); }
-        closeBtn.addEventListener('click', () => { if (timer) clearInterval(timer); });
+        closeBtn.addEventListener('click', () => { 
+            if (timer) clearInterval(timer);
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        });
     } catch(err) {
         showToast('打开失败: '+ err.message, 'error');
     }
 }
+
+// 导出到全局
+window.openWorkDetail = openWorkDetail;
 
 async function uploadAvatarAndSave(file) {
     const blob = await compressImage(file);

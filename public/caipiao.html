@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+
+        .container {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            /* 阴影提升层次感 */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* 底层图片 (被展示的内容) */
+        .img-bottom {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        /* 顶层 Canvas (被刮掉的内容) */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            cursor: crosshair; /* 鼠标样式 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" class="img-bottom" alt="Bottom Image">
+    <canvas id="scratchCanvas"></canvas>
+</div>
+
+<script>
+    const canvas = document.getElementById('scratchCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.querySelector('.container');
+    
+    // 设置 Canvas 尺寸
+    const width = 600;
+    const height = 400;
+    canvas.width = width;
+    canvas.height = height;
+
+    // 1. 加载顶层图片（遮罩层）
+    const topImg = new Image();
+    // 这里使用一张对比度高的图片作为遮罩，实际可用纯色或模糊图
+    topImg.src = 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
+    
+    topImg.onload = function() {
+        // 将图片绘制到 Canvas 上
+        ctx.drawImage(topImg, 0, 0, width, height);
+        
+        // 【核心代码】设置混合模式：
+        // destination-out 会根据新绘制形状的透明度，把原有图像"擦除"
+        ctx.globalCompositeOperation = 'destination-out';
+    };
+
+    // 2. 鼠标移动事件 - 实现柔和刮开
+    let isDrawing = false;
+
+    // 兼容鼠标和触摸设备
+    const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    };
+
+    const scratch = (e) => {
+        e.preventDefault(); // 防止移动端滚动
+        const pos = getPos(e);
+        const x = pos.x;
+        const y = pos.y;
+        
+        // 【核心代码】制造"云层拨开"的柔和感
+        // 我们不画实心圆，而是画一个径向渐变
+        const brushSize = 50; // 笔刷半径
+        
+        // 创建径向渐变：从中心(x,y)向外扩散
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, brushSize);
+        
+        // 颜色并不重要，重要的是 Alpha 透明度
+        // 1 (不透明) = 完全擦除
+        // 0 (全透明) = 不擦除
+        // 中间的过渡值 = 半透明擦除（制造柔和边缘）
+        gradient.addColorStop(0, 'rgba(0,0,0,1)');   // 中心完全擦除
+        gradient.addColorStop(0.4, 'rgba(0,0,0,0.8)'); // 中间过渡
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');   // 边缘不擦除，实现羽化
+
+        ctx.fillStyle = gradient;
+        
+        ctx.beginPath();
+        ctx.arc(x, y, brushSize, 0, Math.PI * 2);
+        ctx.fill();
+    };
+
+    // 事件监听
+    canvas.addEventListener('mousemove', scratch);
+    canvas.addEventListener('touchmove', scratch, {passive: false});
+
+</script>
+
+</body>
+</html>

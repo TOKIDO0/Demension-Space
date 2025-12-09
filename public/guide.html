@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA Design Studio - Layered Design</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* --- 基础配置 & 字体 --- */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;600&family=Syncopate:wght@400;700&display=swap');
+
+        :root {
+            --brand-orange: #ff4d00;
+            --deep-bg: #050505;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        body {
+            background-color: var(--deep-bg);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* --- 全局噪点纹理 --- */
+        .noise-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 0; opacity: 0.4;
+        }
+
+        /* =================================================================
+           模块 1 CSS: 空间案例 (Portfolio)
+           ================================================================= */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+            grid-auto-rows: 300px; 
+        }
+        .project-card {
+            position: relative; overflow: hidden;
+            border: 1px solid transparent; transition: all 0.5s var(--ease-smooth); cursor: pointer;
+        }
+        .span-8 { grid-column: span 8; }
+        .span-4 { grid-column: span 4; }
+        @media (max-width: 768px) {
+            .portfolio-grid { grid-template-columns: 1fr; grid-auto-rows: auto; }
+            .span-8, .span-4 { grid-column: span 1; height: 300px; }
+        }
+
+        .project-card img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.7s var(--ease-smooth);
+            filter: grayscale(100%) contrast(1.1);
+        }
+        .project-info {
+            position: absolute; bottom: 0; left: 0; width: 100%; padding: 30px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            transform: translateY(20px); opacity: 0; transition: all 0.5s ease;
+        }
+        .project-card:hover { border-color: var(--brand-orange); }
+        .project-card:hover img { transform: scale(1.05); filter: grayscale(0%) contrast(1); }
+        .project-card:hover .project-info { transform: translateY(0); opacity: 1; }
+
+        /* =================================================================
+           🔥 新版模态框设计：非对称悬浮叠层 (Asymmetric Layered)
+           ================================================================= */
+        .pf-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(20px);
+            z-index: 9999; display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; 
+            transition: all 0.5s var(--ease-smooth);
+        }
+        .pf-modal-overlay.active { opacity: 1; visibility: visible; }
+
+        /* 容器不再有背景色，而是作为布局框架 */
+        .pf-modal-container {
+            position: relative;
+            width: 90%; max-width: 1600px; height: 80vh;
+            display: flex; 
+            align-items: center; /* 垂直居中 */
+            opacity: 0; transform: scale(0.95);
+            transition: all 0.6s var(--ease-spring);
+        }
+        .pf-modal-overlay.active .pf-modal-container { opacity: 1; transform: scale(1); }
+
+        /* --- 1. 图片层 (右侧，大面积) --- */
+        .pf-layer-image {
+            position: absolute;
+            right: 0; top: 0; bottom: 0;
+            width: 75%; /* 占据大部分宽度 */
+            height: 100%;
+            background: #111;
+            overflow: hidden;
+            border-radius: 4px; /* 微圆角，保持锐利感 */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        
+        .pf-slider-track {
+            display: flex; flex-direction: column; 
+            height: 100%; width: 100%;
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.3, 1);
+        }
+        .pf-slide-img {
+            height: 100%; width: 100%; object-fit: cover; flex-shrink: 0; display: block;
+            filter: brightness(0.8); /*稍微压暗一点，突出前景文字 */
+        }
+
+        /* --- 2. 信息层 (左侧，悬浮叠加) --- */
+        .pf-layer-info {
+            position: relative; z-index: 10;
+            width: 35%; /* 窄面板 */
+            min-width: 400px;
+            background: rgba(15, 15, 15, 0.95); /* 深色实体背景 */
+            border: 1px solid var(--glass-border);
+            border-left: 2px solid var(--brand-orange); /* 左侧橙色强调线 */
+            padding: 50px;
+            box-shadow: 20px 0 50px rgba(0,0,0,0.8); /* 强阴影，制造层级感 */
+            display: flex; flex-direction: column;
+            gap: 30px;
+            /* 关键：让它比图片高一点，或者对其 */
+            height: auto;
+            max-height: 90vh;
+        }
+        @media (max-width: 1024px) {
+            .pf-modal-container { flex-direction: column-reverse; height: 90vh; width: 95%; }
+            .pf-layer-image { width: 100%; height: 60%; position: relative; }
+            .pf-layer-info { width: 100%; height: 40%; min-width: auto; padding: 30px; border-left: none; border-top: 2px solid var(--brand-orange); }
+        }
+
+        /* 标题排版 */
+        .pf-title-group h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem; line-height: 1.1; font-weight: 200;
+            color: white; margin-bottom: 10px;
+        }
+        .pf-title-group span {
+            color: var(--brand-orange); font-family: 'Syncopate'; 
+            font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase;
+        }
+
+        /* 描述文字 */
+        .pf-desc {
+            font-size: 0.95rem; line-height: 1.8; color: #888;
+            border-left: 1px solid rgba(255,255,255,0.1); padding-left: 20px;
+        }
+
+        /* 底部数据条 (HUD Style) */
+        .pf-hud-bar {
+            display: flex; gap: 30px;
+            padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .pf-hud-item { display: flex; flex-direction: column; }
+        .pf-hud-item label { font-size: 0.6rem; color: #555; text-transform: uppercase; letter-spacing: 1px; font-family: 'Syncopate'; margin-bottom: 4px; }
+        .pf-hud-item span { font-size: 0.9rem; color: #ddd; font-family: 'Outfit'; }
+
+        /* 导航按钮组 (悬浮在图片右下角) */
+        .pf-nav-group {
+            position: absolute; bottom: 0; right: 0;
+            display: flex; background: #111;
+            z-index: 20;
+        }
+        .pf-nav-btn {
+            width: 60px; height: 60px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white; cursor: pointer; transition: all 0.2s;
+        }
+        .pf-nav-btn:hover { background: var(--brand-orange); border-color: var(--brand-orange); color: black; }
+
+        /* 流光关闭按钮 (悬浮在右上角) */
+        .pf-close-float {
+            position: absolute; top: -20px; right: -20px; z-index: 50;
+            width: 50px; height: 50px; border-radius: 50%;
+            background: #000; border: 1px solid var(--glass-border);
+            color: white; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .pf-close-float:hover { border-color: var(--brand-orange); color: var(--brand-orange); transform: rotate(90deg); }
+
+        /* 咨询按钮 */
+        .pf-action-btn {
+            padding: 15px 0;
+            background: transparent; border: 1px solid rgba(255,255,255,0.2);
+            color: white; font-family: 'Syncopate'; font-size: 0.7rem; letter-spacing: 2px;
+            text-transform: uppercase; cursor: pointer; transition: all 0.3s;
+            text-align: center; width: 100%;
+        }
+        .pf-action-btn:hover { background: var(--brand-orange); border-color: var(--brand-orange); color: black; }
+
+
+        /* =================================================================
+           模块 2 CSS: 客户评价
+           ================================================================= */
+        .review-card {
+            background: rgba(15, 15, 15, 0.6); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.05); padding: 40px; border-radius: 12px;
+            transform-style: preserve-3d; transform: perspective(1000px);
+            transition: transform 0.05s linear; 
+        }
+        .review-content { transform: translateZ(30px); }
+        .star-icon { color: var(--brand-orange); }
+
+        .beam-btn-container { position: relative; display: inline-block; border-radius: 999px; overflow: hidden; padding: 1px; }
+        .beam-animation {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, var(--brand-orange) 360deg);
+            animation: rotateBeam 4s linear infinite;
+        }
+        @keyframes rotateBeam { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .beam-btn-inner {
+            position: relative; z-index: 1; background: rgba(5, 5, 5, 0.95); color: white;
+            padding: 14px 40px; border-radius: 999px; font-family: 'Outfit'; letter-spacing: 1px; font-size: 14px;
+            display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s;
+        }
+        .beam-btn-inner:hover { background: rgba(20, 20, 20, 0.8); color: var(--brand-orange); }
+
+        .review-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px);
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: all 0.4s ease;
+        }
+        .review-modal-overlay.active { opacity: 1; visibility: visible; }
+        .review-modal-box {
+            width: 90%; max-width: 600px; background: rgba(30, 30, 30, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1); padding: 40px;
+            transform: scale(0.95); transition: all 0.4s ease;
+        }
+        .review-modal-overlay.active .review-modal-box { transform: scale(1); }
+        .custom-input {
+            width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white; padding: 16px; outline: none; margin-top: 8px; font-family: 'Outfit';
+        }
+        .custom-input:focus { border-color: var(--brand-orange); }
+    </style>
+</head>
+<body class="relative">
+
+    <div class="noise-overlay"></div>
+
+    <!-- =================================================================
+         模块 1 HTML: 空间案例
+         ================================================================= -->
+    <section class="relative z-10 py-32 container mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-white/10 pb-8">
+            <div>
+                <span class="text-[#ff4d00] font-['Syncopate'] text-xs tracking-[0.2em] block mb-2">SELECTED WORKS</span>
+                <h2 class="text-5xl font-light tracking-tight">空间案例</h2>
+            </div>
+            <p class="text-gray-500 text-sm max-w-md text-right mt-6 md:mt-0 leading-relaxed">
+                穿越物理与数字的边界。<br>探索那些重新定义居住体验的空间实验。
+            </p>
+        </div>
+
+        <div class="portfolio-grid" id="portfolioGrid">
+            <!-- 动态生成 -->
+        </div>
+
+        <div class="mt-16 text-center">
+            <button class="border border-white/20 text-white px-8 py-3 text-xs uppercase font-['Syncopate'] hover:border-[#ff4d00] hover:text-[#ff4d00] transition-colors">
+                查看更多作品 →
+            </button>
+        </div>
+    </section>
+
+    <!-- 🌟 新版模态框：非对称叠层设计 -->
+    <div id="pfModal" class="pf-modal-overlay">
+        
+        <!-- 容器：无形布局框架 -->
+        <div class="pf-modal-container">
+            
+            <!-- 层 1: 图片层 (视觉主体) -->
+            <div class="pf-layer-image">
+                <div class="pf-slider-track" id="pfTrack">
+                    <!-- 图片 JS 插入 -->
+                </div>
+                <!-- 导航组 (嵌入图片层右下角) -->
+                <div class="pf-nav-group">
+                    <div class="pf-nav-btn" onclick="changeSlide(-1)">↑</div>
+                    <div class="pf-nav-btn" onclick="changeSlide(1)">↓</div>
+                </div>
+            </div>
+
+            <!-- 层 2: 信息层 (悬浮叠加) -->
+            <div class="pf-layer-info">
+                
+                <!-- 悬浮关闭按钮 -->
+                <button class="pf-close-float" onclick="closePfModal()">✕</button>
+
+                <div class="pf-title-group">
+                    <span id="pfCategory">RESIDENTIAL</span>
+                    <h2 id="pfTitle">黑曜石公寓</h2>
+                </div>
+
+                <p class="pf-desc" id="pfDesc">
+                    专为单身精英打造的暗调空间。使用黑色岩板、皮革与深色胡桃木，展现出克制而深邃的男性气质。
+                </p>
+
+                <!-- 底部 HUD 数据条 -->
+                <div class="pf-hud-bar">
+                    <div class="pf-hud-item">
+                        <label>Location</label>
+                        <span id="pfLoc">深圳</span>
+                    </div>
+                    <div class="pf-hud-item">
+                        <label>Size</label>
+                        <span id="pfArea">120 m²</span>
+                    </div>
+                    <div class="pf-hud-item">
+                        <label>Cost</label>
+                        <span id="pfCost">¥ 55W</span>
+                    </div>
+                </div>
+
+                <!-- 底部操作按钮 -->
+                <div style="margin-top: auto;">
+                    <button class="pf-action-btn">
+                        Start Project Inquiry
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- =================================================================
+         模块 2 HTML: 客户评价
+         ================================================================= -->
+    <section class="relative z-10 py-32 bg-[#080808] border-t border-white/5 perspective-container">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#ff4d00] opacity-5 blur-[100px] pointer-events-none rounded-full"></div>
+
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center mb-20">
+                <span class="text-[#ff4d00] font-['Syncopate'] text-xs tracking-[0.2em] uppercase">Testimonials</span>
+                <h2 class="text-4xl md:text-5xl font-light mt-4 text-white">客户评价</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="reviewGrid">
+                <!-- JS 生成内容 -->
+                <div class="review-card" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
+                    <div class="review-content">
+                        <div class="flex gap-1 mb-6 text-sm"><span class="star-icon">★</span><span class="star-icon">★</span><span class="star-icon">★</span><span class="star-icon">★</span><span class="star-icon">★</span></div>
+                        <p class="text-gray-300 italic mb-8">"从图纸到实景，几乎是 1:1 的呈现。团队非常专业，材质选型很有品位。"</p>
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-gray-700 rounded-full overflow-hidden"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover"></div>
+                            <div><h4 class="text-white font-medium">Lin. Z</h4><p class="text-xs text-gray-500 font-['Syncopate']">NEO-TOKYO PENTHOUSE</p></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
+                    <div class="review-content">
+                        <div class="flex gap-1 mb-6 text-sm"><span class="star-icon">★</span><span class="star-icon">★</span><span class="star-icon">★</span><span class="star-icon">★</span><span class="star-icon">★</span></div>
+                        <p class="text-gray-300 italic mb-8">"既有理性美感，又有家的温度。完全没有市面上那种拼凑感。"</p>
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-gray-700 rounded-full overflow-hidden"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover"></div>
+                            <div><h4 class="text-white font-medium">Sarah W.</h4><p class="text-xs text-gray-500 font-['Syncopate']">ART APARTMENT</p></div>
+                        </div>
+                    </div>
+                </div>
+                 <div class="review-card" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
+                    <div class="review-content">
+                        <div class="flex gap-1 mb-6 text-sm"><span class="star-icon">★</span><span class="star-icon">★</span><span class="star-icon">★</span><span class="star-icon">★</span><span class="star-icon">★</span></div>
+                        <p class="text-gray-300 italic mb-8">"既有理性美感，又有家的温度。完全没有市面上那种拼凑感。"</p>
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-gray-700 rounded-full overflow-hidden"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover"></div>
+                            <div><h4 class="text-white font-medium">Sarah W.</h4><p class="text-xs text-gray-500 font-['Syncopate']">ART APARTMENT</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-20 text-center">
+                <div class="beam-btn-container" onclick="openReviewModal()">
+                    <div class="beam-animation"></div>
+                    <button class="beam-btn-inner">
+                        <span>发表我的评价</span>
+                        <span>+</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="reviewModal" class="review-modal-overlay">
+        <div class="review-modal-box">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl text-white">发表评价</h3>
+                <button onclick="closeReviewModal()" class="text-gray-500 hover:text-white">×</button>
+            </div>
+            <form onsubmit="event.preventDefault(); closeReviewModal();">
+                <div class="space-y-4">
+                    <input type="text" class="custom-input" placeholder="您的称呼">
+                    <textarea class="custom-input h-32 resize-none" placeholder="分享您的体验..."></textarea>
+                    <button class="w-full bg-[#ff4d00] text-white py-3 mt-4 font-bold hover:bg-[#ff6624]">提交</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JS Logic -->
+    <script>
+        const projects = [
+            {
+                id: 1, title: "静谧·私宅", category: "住宅设计", location: "上海", duration: "8 个月", area: "240 m²", cost: "¥ 850,000",
+                desc: "在这个项目中，我们试图寻找喧嚣都市中的宁静锚点。通过大面积的留白与天然木质的结合，营造出一种能够让时间慢下来的居住氛围。每一处光影的落点都经过精密计算。",
+                images: [
+                    "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=2574",
+                    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2653",
+                    "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=2670"
+                ]
+            },
+            {
+                id: 2, title: "光之艺廊", category: "商业空间", location: "北京", duration: "4 个月", area: "180 m²", cost: "¥ 620,000",
+                desc: "光线是这个空间的唯一主角。我们利用百叶窗和漫反射材料，让光线在一天中随着太阳的角度变化而流动，形成天然的艺术装置。",
+                images: [
+                    "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2600",
+                    "https://images.unsplash.com/photo-1594498653385-d5175c532be2?q=80&w=2574"
+                ]
+            },
+            {
+                id: 3, title: "黑曜石公寓", category: "大平层", location: "深圳", duration: "6 个月", area: "120 m²", cost: "¥ 550,000",
+                desc: "专为单身精英打造的暗调空间。使用黑色岩板、皮革与深色胡桃木，展现出克制而深邃的男性气质。",
+                images: [
+                    "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?q=80&w=2670",
+                    "https://images.unsplash.com/photo-1517581177697-a533188a6472?q=80&w=2670"
+                ]
+            },
+            {
+                id: 4, title: "山涧别墅", category: "别墅设计", location: "杭州", duration: "12 个月", area: "600 m²", cost: "¥ 2,800,000",
+                desc: "建筑生长于自然之中。我们将窗户开得极大，旨在模糊室内外的界限，让山林的风与景色成为家里最昂贵的装饰。",
+                images: [
+                    "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?q=80&w=2676",
+                    "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2670"
+                ]
+            }
+        ];
+
+        const grid = document.getElementById('portfolioGrid');
+        projects.forEach((p, idx) => {
+            const spanClass = (idx === 0 || idx === 3) ? 'span-8' : 'span-4';
+            const card = document.createElement('div');
+            card.className = `project-card ${spanClass}`;
+            card.onclick = () => openPfModal(p);
+            card.innerHTML = `
+                <img src="${p.images[0]}" alt="${p.title}">
+                <div class="project-info">
+                    <span class="text-[#ff4d00] text-xs font-['Syncopate'] mb-1 block">NO. 0${idx+1}</span>
+                    <h3 class="text-2xl font-semibold">${p.title}</h3>
+                    <p class="text-white/60 text-sm mt-1">${p.location} / ${p.area}</p>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        let currentImgIndex = 0;
+        let currentProjectImages = [];
+        const track = document.getElementById('pfTrack');
+        const modal = document.getElementById('pfModal');
+
+        function openPfModal(data) {
+            document.getElementById('pfCategory').innerText = data.category;
+            document.getElementById('pfTitle').innerText = data.title;
+            document.getElementById('pfDesc').innerText = data.desc;
+            document.getElementById('pfLoc').innerText = data.location;
+            // document.getElementById('pfDuration').innerText = data.duration; // 如有需要可恢复
+            document.getElementById('pfArea').innerText = data.area;
+            document.getElementById('pfCost').innerText = data.cost;
+
+            currentProjectImages = data.images;
+            currentImgIndex = 0;
+            track.innerHTML = ''; 
+            
+            data.images.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.className = 'pf-slide-img';
+                track.appendChild(img);
+            });
+            updateSliderPosition();
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePfModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function changeSlide(direction) {
+            const count = currentProjectImages.length;
+            currentImgIndex = currentImgIndex + direction;
+            if (currentImgIndex < 0) currentImgIndex = count - 1;
+            if (currentImgIndex >= count) currentImgIndex = 0;
+            updateSliderPosition();
+        }
+
+        function updateSliderPosition() {
+            track.style.transform = `translateY(-${currentImgIndex * 100}%)`;
+        }
+
+        function handleTilt(e, card) {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left; 
+            const y = e.clientY - rect.top;  
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -15; 
+            const rotateY = ((x - centerX) / centerX) * 15;  
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+        }
+
+        function resetTilt(card) {
+            card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale(1)`;
+        }
+
+        function openReviewModal() {
+            document.getElementById('reviewModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    </script>
+</body>
+</html>

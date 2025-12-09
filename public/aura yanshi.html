@@ -1,0 +1,658 @@
+<html lang="zh-CN" class="scroll-smooth"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA | Future Interiors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    
+    <!-- 
+        ================================================================
+        全局样式与配置板块 (Global Styles & Config)
+        原理：
+        1. 使用 Google Fonts 引入 Inter (UI字体) 和 PT Serif (标题字体)。
+        2. 定义 Tailwind Config 插件，用于生成 3D 变换 (Rotate X/Y/Z) 和透视 (Perspective) 工具类。
+        3. 定义全局动画 @keyframes (如流体漂浮 drift)。
+        ================================================================
+    -->
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&display=swap');
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #0a0a0a;
+        color: #ffffff;
+        overflow-x: hidden; /* 防止因为 3D 变换导致的水平滚动条 */
+    }
+    
+    /* Fluid Animation - 用于背景光斑的漂浮效果 */
+    @keyframes drift {
+        0% { transform: translate(0px, 0px) scale(1); }
+        33% { transform: translate(30px, -50px) scale(1.1); }
+        66% { transform: translate(-20px, 20px) scale(0.9); }
+        100% { transform: translate(0px, 0px) scale(1); }
+    }
+    .fluid-blob {
+        animation: drift 10s infinite ease-in-out alternate;
+        filter: blur(80px);
+        opacity: 0.6;
+    }
+    
+    /* Custom Scrollbar - 线性风格滚动条 */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #f97316; }
+    
+    /* 3D Card Perspective Utilities - 用于 Services 板块 */
+    .perspective-container { perspective: 1000px; }
+    .tilt-card { transform-style: preserve-3d; transition: transform 0.1s ease-out; }
+    .tilt-content { transform: translateZ(20px); }
+    
+    /* Modal Transitions - 模态框进出动画 */
+    .modal-enter { opacity: 0; transform: scale(0.95); }
+    .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 300ms ease-out, transform 300ms cubic-bezier(0.16, 1, 0.3, 1); }
+    
+    /* Scratch Canvas Cursor - 刮刮乐鼠标样式 */
+    .scratch-cursor { cursor: crosshair; }
+    </style>
+    
+    <script>
+    // Tailwind 配置扩展：添加原生 CSS 中缺少的 3D 变换工具类
+    tailwind.config = {
+    theme: { extend: {} },
+    plugins: [
+        function({ addUtilities }) {
+            // AI 提示：这里手动构建了 rotate-x, rotate-y 等工具类，因为 Tailwind v3 默认不包含完整的 3D 变换
+            const rotateValues = [0, 5, 10, 15, 20, 30, 45, 75];
+            const utilities = {};
+            ['x', 'y', 'z'].forEach(axis => {
+                rotateValues.forEach(val => {
+                    utilities[`.rotate-${axis}-${val}`] = { transform: `rotate${axis.toUpperCase()}(${val}deg)` };
+                    utilities[`.-rotate-${axis}-${val}`] = { transform: `rotate${axis.toUpperCase()}(-${val}deg)` };
+                });
+            });
+            addUtilities(utilities);
+        }
+    ]
+    };
+    </script>
+    </head>
+    
+    <body class="bg-neutral-950 text-neutral-200 antialiased selection:bg-orange-500 selection:text-white">
+    
+    <!-- 
+        ================================================================
+        背景特效板块 (Background Effects)
+        原理：
+        1. Unicorn Studio (Web Component): 使用外部脚本渲染复杂的 WebGL 流体背景。它作为一个固定定位层(-z-10)存在。
+        2. 遮罩层 (Mask): 使用 CSS mask-image 实现上下边缘的淡入淡出，使背景不至于太抢眼。
+        调用方法：
+        - div 必须包含 data-us-project ID。
+        - 脚本会自动寻找该 ID 并注入 canvas。
+        ================================================================
+    -->
+    <div class="aura-background-component fixed top-0 w-full h-screen -z-10" data-alpha-mask="80" style="mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent)">
+        <div class="aura-background-component top-0 w-full -z-10 absolute h-full">
+            <div data-us-project="4OF29NF3HVBYQsrwPvVq" class="absolute w-full h-full left-0 top-0 -z-10"></div>
+            <script type="text/javascript">
+                // 异步加载 Unicorn Studio 渲染引擎
+                !function(){if(!window.UnicornStudio){window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js",i.onload=function(){window.UnicornStudio.isInitialized||(UnicornStudio.init(),window.UnicornStudio.isInitialized=!0)},(document.head || document.body).appendChild(i)}}();
+            </script>
+        </div>
+    </div>
+    
+        <!-- Navbar - 玻璃拟态导航栏 -->
+        <nav class="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-neutral-950/70 backdrop-blur-xl">
+            <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+                <a href="#" class="text-xl font-medium tracking-tighter text-white">
+                    AURA<span class="text-orange-500">.</span>DESIGN
+                </a>
+                <div class="hidden md:flex items-center space-x-8 text-sm text-neutral-400">
+                    <a href="#work" class="hover:text-white transition-colors duration-300">作品案例</a>
+                    <a href="#philosophy" class="hover:text-white transition-colors duration-300">设计哲学</a>
+                    <a href="#services" class="hover:text-white transition-colors duration-300">服务流程</a>
+                </div>
+                <button class="group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full p-[1px]">
+                    <span class="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#171717_0%,#f97316_50%,#171717_100%)]"></span>
+                    <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950 px-5 text-xs font-medium text-neutral-300 backdrop-blur-3xl transition-colors group-hover:text-white">
+                        联系我们
+                    </span>
+                </button>
+            </div>
+        </nav>
+    
+        <!-- 
+            ================================================================
+            首屏 Hero 板块 (Hero Section with Particles)
+            原理：
+            1. HTML5 Canvas (#hero-particles): 覆盖在内容之上的透明层。
+            2. JS 实现 (Script部分 - Section 1): 
+               - 创建粒子数组，每个粒子有位置(x,y)和速度(vx,vy)。
+               - 使用勾股定理计算粒子间距离，小于阈值时绘制连线。
+               - 鼠标交互：计算鼠标与粒子的距离，产生斥力效果。
+            ================================================================
+        -->
+        <header class="flex min-h-screen flex-col overflow-hidden pt-20 relative items-center justify-center">
+            <!-- 静态装饰性光斑 (CSS Animation) -->
+            <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                <div class="fluid-blob absolute -top-20 left-1/4 h-96 w-96 rounded-full bg-orange-600/20 mix-blend-screen"></div>
+                <div class="fluid-blob absolute top-1/2 right-1/4 h-80 w-80 rounded-full bg-blue-900/20 mix-blend-screen" style="animation-delay: -2s;"></div>
+            </div>
+    
+            <!-- 交互粒子画布 (JS Controlled) -->
+            <canvas class="xl:bg-clip-text xl:text-transparent bg-[conic-gradient(from_180deg,var(--tw-gradient-stops))] from-white/10 to-white/0 opacity-40 z-10 absolute top-0 right-0 bottom-0 left-0" width="1432" height="913" id="hero-particles"></canvas>
+    
+            <div class="text-center max-w-5xl z-20 mr-auto ml-auto pr-6 pl-6 relative">
+                <div class="mb-6 flex justify-center">
+                    <span class="inline-flex items-center gap-2 text-xs text-neutral-300 bg-white/5 border-white/10 border rounded-full pt-1 pr-3 pb-1 pl-3 backdrop-blur-md">
+                        <span class="flex w-2 h-2 relative">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                        </span> 重新定义您的居住空间
+                    </span>
+                </div>
+                
+                <h1 class="md:text-7xl lg:text-8xl text-5xl font-medium text-white tracking-tight font-pt-serif mb-8">重塑您的<br> <span class="bg-clip-text text-transparent font-pt-serif bg-gradient-to-r from-white via-neutral-200 to-neutral-500">空间幻想</span></h1>
+                <p class="leading-relaxed text-lg font-light text-zinc-400 max-w-2xl mr-auto mb-10 ml-auto">维度空间设计工作室满足您的定制需求以及空间布置的想象</p>
+                
+                <div class="flex flex-col gap-4 sm:flex-row sm:justify-center gap-x-4 gap-y-4 items-center">
+                    <button class="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full p-[1px] shadow-[0_0_20px_-5px_rgba(249,115,22,0.4)] transition-shadow duration-300 hover:shadow-[0_0_25px_-5px_rgba(249,115,22,0.6)]">
+                        <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#000000_0%,#f97316_50%,#000000_100%)]"></span>
+                        <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950 px-8 text-sm font-medium text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900">
+                            探索作品集 <iconify-icon icon="lucide:arrow-right" class="ml-2 text-lg text-orange-500"></iconify-icon>
+                        </span>
+                    </button>
+                    <button class="group flex h-12 items-center justify-center rounded-full border border-neutral-800 bg-transparent px-8 text-sm font-medium text-neutral-300 transition-all hover:border-neutral-600 hover:text-white">了解服务</button>
+                </div>
+            </div>
+            
+            <div class="absolute bottom-10 left-1/2 z-20 -translate-x-1/2 animate-bounce">
+                <iconify-icon icon="lucide:chevrons-down" class="text-2xl text-neutral-600"></iconify-icon>
+            </div>
+        </header>
+    
+        <!-- Data Stats Section -->
+        <section class="border-y border-white/5 bg-neutral-950/50 py-12 backdrop-blur-sm">
+            <div class="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 md:grid-cols-4">
+                <div class="text-center md:text-left"><h3 class="text-3xl font-semibold tracking-tight text-white">120+</h3><p class="mt-1 text-xs uppercase tracking-widest text-neutral-500">未来主义案例</p></div>
+                <div class="text-center md:text-left"><h3 class="text-3xl font-semibold tracking-tight text-white">45</h3><p class="mt-1 text-xs uppercase tracking-widest text-neutral-500">国际设计大奖</p></div>
+                <div class="text-center md:text-left"><h3 class="text-3xl font-semibold tracking-tight text-white">100%</h3><p class="mt-1 text-xs uppercase tracking-widest text-neutral-500">智能家居覆盖</p></div>
+                <div class="text-center md:text-left"><h3 class="text-3xl font-semibold tracking-tight text-white">24/7</h3><p class="mt-1 text-xs uppercase tracking-widest text-neutral-500">环境感知系统</p></div>
+            </div>
+        </section>
+    
+        <!-- 
+            ================================================================
+            设计哲学与刮刮卡特效板块 (Philosophy & Scratch Reveal)
+            原理：
+            1. 布局: 一个相对定位容器 (#scratch-container)，底层是结果图 (img)，顶层是覆盖层 (canvas)。
+            2. 初始状态: Canvas 填充深色或模糊图像，完全覆盖底层 img。
+            3. 交互逻辑 (Script部分 - Section 3):
+               - 监听 mousemove/touchmove 事件。
+               - 使用 Canvas API 的 `globalCompositeOperation = 'destination-out'`。
+               - 这个属性使得绘制的内容变透明（相当于橡皮擦），从而露出底层的 img。
+            ================================================================
+        -->
+        <section id="philosophy" class="md:py-32 pt-24 pb-24 relative">
+            <div class="mx-auto max-w-7xl px-6">
+                <div class="grid gap-16 md:grid-cols-2 md:items-center">
+                    <div class="relative">
+                        <div class="absolute -left-4 -top-4 h-24 w-24 rounded-full border border-orange-500/20 bg-transparent blur-sm"></div>
+                        <h2 class="relative text-3xl font-medium tracking-tight text-white md:text-4xl">设计不仅是视觉，<br>更是<span class="text-orange-500">算法</span>与<span class="text-orange-500">情感</span>的共鸣。</h2>
+                        <p class="mt-6 text-neutral-400 font-light leading-relaxed">在AURA，我们摒弃传统的装饰主义。我们使用光线作为构建空间的原材料，利用智能材料响应居住者的情绪。</p>
+                        <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div class="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-orange-500/30 hover:bg-white/[0.04]">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-orange-500"><iconify-icon icon="lucide:zap" width="20"></iconify-icon></div>
+                                <div><h4 class="text-sm font-medium text-white">动态光照系统</h4><p class="mt-1 text-xs text-neutral-500">随昼夜节律自动调节色温。</p></div>
+                            </div>
+                            <div class="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-orange-500/30 hover:bg-white/[0.04]">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-orange-500"><iconify-icon icon="lucide:layers" width="20"></iconify-icon></div>
+                                <div class=""><h4 class="text-sm font-medium text-white">模块化布局</h4><p class="mt-1 text-xs text-neutral-500">适应不同生活场景的可变空间。</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 刮刮卡容器 -->
+                    <div class="relative aspect-square md:aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-900 select-none touch-none" id="scratch-container">
+                        <!-- 底层显示的图片 (被Reveal的对象) -->
+                        <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/917d6f93-fb36-439a-8c48-884b67b35381_1600w.jpg" class="absolute inset-0 h-full w-full object-cover" alt="Reveal Background">
+                        <!-- 顶层 Canvas (待刮除的覆盖层) -->
+                        <canvas id="scratch-canvas" class="absolute inset-0 h-full w-full object-cover z-10 scratch-cursor"></canvas>
+                        <!-- 提示UI -->
+                        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 pointer-events-none z-20 flex flex-col items-center gap-2 opacity-70">
+                            <iconify-icon icon="lucide:hand" class="text-white text-xl animate-pulse"></iconify-icon>
+                            <span class="text-[10px] uppercase tracking-widest text-white">滑动以探索实景</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    
+        <!-- 
+            ================================================================
+            作品展示板块 (Work Gallery)
+            原理：
+            1. 布局: Grid 布局，卡片使用 aspect-ratio 保持比例。
+            2. 触发器: 每个卡片 div 绑定 `onclick="openModal('projectID')"`。
+            3. 状态管理: `projectData` 对象存储了所有项目的详情（JSON格式）。
+            ================================================================
+        -->
+        <section class="pt-24 pb-24" id="work">
+            <div class="max-w-7xl z-10 mr-auto ml-auto pr-6 pl-6 relative">
+                <div class="absolute top-0 right-10 w-64 h-64 bg-orange-500/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+                <div class="mb-20 flex flex-col justify-between items-start gap-8 md:flex-row md:items-end border-b border-white/5 pb-8">
+                    <div>
+                        <h2 class="text-4xl font-light tracking-tight text-white md:text-6xl">空间<span class="text-neutral-600">案例</span></h2>
+                    </div>
+                    <a href="#" class="group relative flex items-center gap-3 overflow-hidden rounded-full bg-neutral-900 px-6 py-3 pr-4 text-sm text-neutral-300 transition-all duration-300 hover:bg-neutral-800 border border-white/5 hover:border-orange-500/30">
+                        <span class="relative z-10 font-normal tracking-wide">VIEW ALL</span><iconify-icon icon="lucide:arrow-right" width="14"></iconify-icon>
+                    </a>
+                </div>
+    
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
+                    <!-- Project 1 Trigger -->
+                    <div onclick="openModal('project1')" class="group relative aspect-[4/5] cursor-pointer overflow-hidden rounded-xl bg-neutral-900 ring-1 ring-white/10 transition-all duration-500 hover:ring-orange-500/50 hover:shadow-2xl hover:-translate-y-1">
+                        <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/917d6f93-fb36-439a-8c48-884b67b35381_1600w.jpg" class="h-full w-full object-cover opacity-80 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100 filter grayscale-[20%] group-hover:grayscale-0">
+                        <div class="absolute inset-x-0 bottom-0 p-8 z-10">
+                            <div class="translate-y-8 transition-transform duration-500 group-hover:translate-y-0">
+                                <span class="mb-4 inline-block rounded-full bg-orange-500/10 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-orange-400 border border-orange-500/20">Residential</span>
+                                <h3 class="text-3xl font-light tracking-tight text-white group-hover:text-orange-50">Void House</h3>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Project 2 Trigger -->
+                    <div onclick="openModal('project2')" class="group relative aspect-[4/5] cursor-pointer overflow-hidden rounded-xl bg-neutral-900 ring-1 ring-white/10 transition-all duration-500 hover:ring-blue-500/50 hover:shadow-2xl lg:translate-y-16 hover:-translate-y-1 lg:hover:translate-y-[3.75rem]">
+                        <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/4734259a-bad7-422f-981e-ce01e79184f2_1600w.jpg" class="h-full w-full object-cover opacity-80 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100 filter grayscale-[20%] group-hover:grayscale-0">
+                        <div class="absolute inset-x-0 bottom-0 p-8 z-10">
+                            <div class="translate-y-8 transition-transform duration-500 group-hover:translate-y-0">
+                                <span class="mb-4 inline-block rounded-full bg-blue-500/10 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-blue-400 border border-blue-500/20">Commercial</span>
+                                <h3 class="text-3xl font-light tracking-tight text-white group-hover:text-blue-50">Synapse Office</h3>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Project 3 Trigger -->
+                    <div onclick="openModal('project3')" class="group relative aspect-[4/5] cursor-pointer overflow-hidden rounded-xl bg-neutral-900 ring-1 ring-white/10 transition-all duration-500 hover:ring-purple-500/50 hover:shadow-2xl hover:-translate-y-1">
+                        <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/c543a9e1-f226-4ced-80b0-feb8445a75b9_1600w.jpg" class="h-full w-full object-cover opacity-80 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100 filter grayscale-[20%] group-hover:grayscale-0">
+                        <div class="absolute inset-x-0 bottom-0 p-8 z-10">
+                            <div class="translate-y-8 transition-transform duration-500 group-hover:translate-y-0">
+                                <span class="mb-4 inline-block rounded-full bg-purple-500/10 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-purple-400 border border-purple-500/20">Exhibition</span>
+                                <h3 class="text-3xl font-light tracking-tight text-white group-hover:text-purple-50">Light Capsule</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    
+        <!-- Testimonials Section -->
+        <section class="py-24 relative overflow-hidden bg-neutral-950">
+            <div class="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-500/50 to-transparent -translate-y-1/2 blur-sm"></div>
+            <div class="max-w-7xl mx-auto px-6 relative z-10">
+                <div class="flex flex-col items-center justify-center text-center mb-12">
+                    <h2 class="text-3xl md:text-5xl font-medium text-white tracking-tight">聆听<span class="text-orange-500">未来</span>的声音</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Testimonial Items (Simplified Structure) -->
+                    <div class="group relative p-[1px] rounded-2xl bg-gradient-to-b from-white/10 to-white/0 overflow-hidden hover:from-orange-500/40 transition-colors duration-500">
+                        <div class="absolute inset-0 bg-neutral-900/90 backdrop-blur-xl rounded-2xl"></div>
+                        <div class="relative p-8 h-full flex flex-col justify-between">
+                            <p class="text-neutral-300 font-light text-sm mb-6">"AURA 将我们的办公室变成了一个有生命的有机体。"</p>
+                            <div class="flex items-center gap-4 border-t border-white/5 pt-4">
+                                <div class="h-10 w-10 rounded-full bg-neutral-800"><img src="https://i.pravatar.cc/100?img=33" class="rounded-full opacity-80"></div>
+                                <div><h4 class="text-sm font-medium text-white">Alex Chen</h4><p class="text-xs text-neutral-500">CTO, Nexus Corp</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ... other testimonials ... -->
+                </div>
+            </div>
+        </section>
+    
+        <!-- 
+            ================================================================
+            3D 倾斜服务卡片板块 (Services with Tilt Effect)
+            原理：
+            1. 布局: Flex/Grid 布局卡片。
+            2. JS 交互 (Script部分 - Section 2):
+               - 监听卡片 (`.tilt-card`) 的 `mousemove` 事件。
+               - 计算鼠标相对于卡片中心的位置 (offsetX, offsetY)。
+               - 将偏移量映射为 CSS 的 `rotateX` 和 `rotateY` 值。
+               - 使用 `transform-style: preserve-3d` 和 `translateZ` 实现内部元素的视差浮动效果。
+            ================================================================
+        -->
+        <section class="overflow-hidden bg-neutral-950 pt-24 pb-24 relative" id="services">
+            <div class="relative mx-auto max-w-7xl px-6 perspective-container">
+                <div class="text-center mb-16"><h2 class="text-3xl font-medium tracking-tight text-white md:text-5xl">定制服务</h2></div>
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-6">
+                    <div class="tilt-card group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl" data-tilt="">
+                        <div class="relative z-20 p-8 tilt-content">
+                            <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500"><iconify-icon icon="lucide:monitor-smartphone" width="24"></iconify-icon></div>
+                            <h3 class="mb-3 text-lg font-medium text-white">全屋智能集成</h3>
+                            <p class="text-sm leading-relaxed text-neutral-400">将物联网设备隐形于设计之中。</p>
+                        </div>
+                    </div>
+                    <div class="tilt-card group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl" data-tilt="">
+                        <div class="relative z-20 p-8 tilt-content">
+                            <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400"><iconify-icon icon="lucide:box" width="24"></iconify-icon></div>
+                            <h3 class="mb-3 text-lg font-medium text-white">3D 沉浸式预览</h3>
+                            <p class="text-sm leading-relaxed text-neutral-400">在动工前，通过 VR/AR 技术让您身临其境。</p>
+                        </div>
+                    </div>
+                    <div class="tilt-card group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl" data-tilt="">
+                        <div class="relative z-20 p-8 tilt-content">
+                            <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400"><iconify-icon icon="lucide:droplets" width="24"></iconify-icon></div>
+                            <h3 class="mb-3 text-lg font-medium text-white">可持续材料研发</h3>
+                            <p class="text-sm leading-relaxed text-neutral-400">使用可回收、自修复的未来材料。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    
+        <!-- CTA Section -->
+        <section class="pt-24 pb-24">
+            <div class="text-center max-w-4xl mr-auto ml-auto px-6">
+                <div class="relative overflow-hidden rounded-3xl border border-white/10 bg-neutral-900 px-6 py-16 sm:px-16">
+                    <div class="absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-orange-600/20 blur-[80px]"></div>
+                    <h2 class="relative z-10 text-3xl font-medium tracking-tight text-white md:text-4xl">准备好启动您的空间变革了吗？</h2>
+                    <div class="relative z-10 mt-8 flex justify-center">
+                        <button class="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full p-[1px]">
+                            <span class="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#000000_0%,#ffffff_50%,#000000_100%)]"></span>
+                            <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950 px-8 text-sm font-medium text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900">开始咨询</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    
+        <!-- Footer -->
+        <footer class="border-t border-white/5 bg-neutral-950 py-12 text-sm">
+            <div class="mx-auto max-w-7xl px-6 flex flex-col items-center justify-between gap-6 md:flex-row">
+                <div class="flex items-center gap-2"><div class="h-6 w-6 rounded-full bg-gradient-to-tr from-orange-500 to-purple-600"></div><span class="font-semibold tracking-tight text-white">AURA</span></div>
+                <div class="text-neutral-600">© 2023 Aura Design Studio.</div>
+            </div>
+        </footer>
+    
+        <!-- 
+            ================================================================
+            项目详情模态框 (Project Details Modal)
+            修复说明：
+            1. 居中修复: 在父容器添加 `flex items-center justify-center`。
+            2. 初始隐藏: 默认 `hidden`，JS控制移除 hidden 并添加 flex。
+            原理：
+            - 这是一个全屏覆盖层 (fixed inset-0)。
+            - 左侧是图片轮播 (Image Gallery)，右侧是信息 (Info)。
+            - 数据通过 JS 动态注入，无需跳转页面。
+            ================================================================
+        -->
+        <div id="project-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 sm:p-6 opacity-0 pointer-events-none transition-all duration-300">
+            <!-- Backdrop (点击背景关闭) -->
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-xl" onclick="closeModal()"></div>
+            
+            <!-- Modal Content Container (居中核心) -->
+            <div class="relative w-full max-w-6xl overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 shadow-2xl flex flex-col md:flex-row max-h-[90vh] z-10 my-auto mx-auto">
+                
+                <!-- Close Button -->
+                <button onclick="closeModal()" class="absolute top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-white/20 transition-colors">
+                    <iconify-icon icon="lucide:x" width="20"></iconify-icon>
+                </button>
+    
+                <!-- Gallery Side (Left) -->
+                <div class="relative h-[40vh] md:h-auto md:w-2/3 bg-black overflow-hidden group">
+                    <div id="modal-gallery" class="relative w-full h-full"><!-- Images Injected Here --></div>
+                    <div class="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                        <button onclick="changeSlide(-1)" class="pointer-events-auto h-10 w-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 border border-white/10"><iconify-icon icon="lucide:chevron-left" width="20"></iconify-icon></button>
+                        <button onclick="changeSlide(1)" class="pointer-events-auto h-10 w-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 border border-white/10"><iconify-icon icon="lucide:chevron-right" width="20"></iconify-icon></button>
+                    </div>
+                    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2" id="modal-dots"></div>
+                </div>
+    
+                <!-- Info Side (Right) -->
+                <div class="flex-1 overflow-y-auto p-8 md:p-12 bg-neutral-900 border-l border-white/5">
+                    <div class="space-y-6">
+                        <div>
+                            <span id="modal-tag" class="inline-block rounded-full bg-orange-500/10 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-orange-400 border border-orange-500/20 mb-4">Residential</span>
+                            <h3 id="modal-title" class="text-3xl font-light text-white">Project Name</h3>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 py-6 border-y border-white/5">
+                            <div><p class="text-xs text-neutral-500 uppercase tracking-wider">地点</p><p id="modal-location" class="text-sm text-white mt-1">Shanghai</p></div>
+                            <div><p class="text-xs text-neutral-500 uppercase tracking-wider">周期</p><p id="modal-duration" class="text-sm text-white mt-1">8 Months</p></div>
+                        </div>
+                        <div>
+                            <p class="text-xs text-neutral-500 uppercase tracking-wider mb-2">详情</p>
+                            <p id="modal-desc" class="text-sm font-light leading-relaxed text-neutral-400">Description...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- 
+            ================================================================
+            JavaScript 逻辑中心
+            包含：
+            1. Hero 粒子系统 (Canvas 2D)
+            2. 卡片 3D 倾斜计算
+            3. 刮刮卡 Canvas 实现
+            4. 模态框数据管理与渲染
+            ================================================================
+        -->
+        <script>
+            // --- 1. Hero Particles System (粒子连线特效) ---
+            // 原理：生成随机粒子，在 requestAnimationFrame 循环中更新位置。
+            // 检测粒子间距，若小于阈值则绘制连线 (lineTo)。检测鼠标距离实现斥力。
+            const canvas = document.getElementById('hero-particles');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            const particleCount = 60; // 粒子数量
+            
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+    
+            let mouse = { x: null, y: null };
+            window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
+            window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
+    
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.size = Math.random() * 1.5 + 0.5;
+                    this.color = Math.random() > 0.9 ? 'rgba(249, 115, 22, ' : 'rgba(255, 255, 255, '; 
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+                    // Mouse interaction logic
+                    if (mouse.x != null) {
+                        let dx = mouse.x - this.x;
+                        let dy = mouse.y - this.y;
+                        let distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < 200) {
+                            const forceDirectionX = dx / distance;
+                            const forceDirectionY = dy / distance;
+                            const force = (200 - distance) / 200;
+                            this.x -= forceDirectionX * force * 2;
+                            this.y -= forceDirectionY * force * 2;
+                        }
+                    }
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color + '0.6)';
+                    ctx.fill();
+                }
+            }
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                    for (let j = i; j < particles.length; j++) {
+                        let dx = particles[i].x - particles[j].x;
+                        let dy = particles[i].y - particles[j].y;
+                        let distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < 150) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = 'rgba(255, 255, 255,' + (1 - distance/150)*0.15 + ')';
+                            ctx.lineWidth = 1;
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+    
+            // --- 2. Service Cards 3D Tilt (3D 倾斜效果) ---
+            // 原理：计算鼠标相对于元素中心的偏移，转换为 rotateX/Y 值。
+            document.querySelectorAll('.tilt-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.transform = `rotateX(${((y - rect.height/2) / rect.height/2) * -10}deg) rotateY(${((x - rect.width/2) / rect.width/2) * 10}deg)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+                });
+            });
+    
+            // --- 3. Scratch Canvas (刮刮卡逻辑) ---
+            // 原理：globalCompositeOperation = 'destination-out' 实现擦除。
+            const scratchCanvas = document.getElementById('scratch-canvas');
+            if (scratchCanvas) {
+                const sCtx = scratchCanvas.getContext('2d');
+                const container = document.getElementById('scratch-container');
+                
+                // 加载用于覆盖的图像 (这里简单使用纯色+噪点模拟，实际可加载图片)
+                function initScratch() {
+                    scratchCanvas.width = container.offsetWidth;
+                    scratchCanvas.height = container.offsetHeight;
+                    sCtx.fillStyle = "#171717"; // 覆盖层颜色
+                    sCtx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+                    sCtx.globalCompositeOperation = 'destination-out'; // 关键：设置为擦除模式
+                }
+                window.addEventListener('resize', initScratch);
+                initScratch(); // 初始化
+    
+                function scratch(e) {
+                    const rect = scratchCanvas.getBoundingClientRect();
+                    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+                    sCtx.beginPath();
+                    sCtx.arc(x, y, 40, 0, Math.PI * 2); // 笔刷大小 40
+                    sCtx.fill(); 
+                }
+                scratchCanvas.addEventListener('mousemove', scratch);
+                scratchCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); });
+            }
+    
+            // --- 4. Modal Logic (模态框数据与控制) ---
+            // 数据源
+            const projectData = {
+                'project1': {
+                    title: "Void House", tag: "Residential",
+                    color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/20",
+                    location: "Shanghai, West Bund", duration: "12 Months",
+                    desc: "Void House 是对极简主义居住空间的终极探索。我们移除了所有非必要的墙体，利用智能玻璃作为隔断。",
+                    images: ["https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/917d6f93-fb36-439a-8c48-884b67b35381_1600w.jpg", "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1600&auto=format&fit=crop"]
+                },
+                'project2': {
+                    title: "Synapse Office", tag: "Commercial",
+                    color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20",
+                    location: "Shenzhen, Nanshan", duration: "18 Months",
+                    desc: "受神经元突触启发，Synapse Office 旨在促进高频次的思想碰撞。没有固定的工位，只有流动的协作区。",
+                    images: ["https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/4734259a-bad7-422f-981e-ce01e79184f2_1600w.jpg", "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1600&auto=format&fit=crop"]
+                },
+                'project3': {
+                    title: "Light Capsule", tag: "Exhibition",
+                    color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20",
+                    location: "Beijing, 798", duration: "4 Months",
+                    desc: "一个纯粹的光影容器。墙面涂有特殊的光敏涂料，能够捕捉观众的影子并短暂保留。",
+                    images: ["https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/c543a9e1-f226-4ced-80b0-feb8445a75b9_1600w.jpg", "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1600&auto=format&fit=crop"]
+                }
+            };
+    
+            const modal = document.getElementById('project-modal');
+            let currentProjectImages = [];
+            let currentSlideIndex = 0;
+    
+            function openModal(projectId) {
+                const data = projectData[projectId];
+                if(!data) return;
+                
+                // 填充文本数据
+                document.getElementById('modal-title').innerText = data.title;
+                document.getElementById('modal-desc').innerText = data.desc;
+                document.getElementById('modal-location').innerText = data.location;
+                document.getElementById('modal-duration').innerText = data.duration;
+                
+                const tag = document.getElementById('modal-tag');
+                tag.innerText = data.tag;
+                tag.className = `inline-block rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-wider mb-4 border ${data.bg} ${data.color} ${data.border}`;
+    
+                // 初始化图片轮播
+                currentProjectImages = data.images;
+                currentSlideIndex = 0;
+                renderGallery();
+    
+                // 显示模态框 (移除hidden, 添加flex以保证居中)
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                // 强制重绘后添加透明度过渡
+                void modal.offsetWidth; 
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                document.body.style.overflow = 'hidden'; // 禁止背景滚动
+            }
+    
+            function closeModal() {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }, 300);
+            }
+    
+            function renderGallery() {
+                const gallery = document.getElementById('modal-gallery');
+                const dots = document.getElementById('modal-dots');
+                gallery.innerHTML = ''; dots.innerHTML = '';
+                
+                currentProjectImages.forEach((src, i) => {
+                    // 图片
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.className = `absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${i === currentSlideIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`;
+                    gallery.appendChild(img);
+                    // 圆点
+                    const dot = document.createElement('div');
+                    dot.className = `w-2 h-2 rounded-full transition-colors ${i === currentSlideIndex ? 'bg-white' : 'bg-white/30'}`;
+                    dots.appendChild(dot);
+                });
+            }
+    
+            function changeSlide(dir) {
+                const total = currentProjectImages.length;
+                currentSlideIndex = (currentSlideIndex + dir + total) % total;
+                renderGallery(); // 重新渲染状态
+            }
+        </script>
+    
+    </body></html>

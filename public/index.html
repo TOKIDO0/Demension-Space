@@ -1,451 +1,2292 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
+<html lang="zh-CN" class="scroll-smooth"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>维度空间 - 装修设计工作室</title>
-    <meta name="description" content="维度空间 - 创意展示平台">
-    <link rel="stylesheet" href="styles.css">
-    <style>body{background:#0a0a14;color:#fff}</style>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- 移除重复的模块引用，避免加载冲突 -->
-</head>
-<body>
-    <!-- 背景容器 -->
-    <div class="background-container">
-        <div class="neon-blob blob-1"></div>
-        <div class="neon-blob blob-2"></div>
-        <div class="neon-blob blob-3"></div>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap');
+        
+        html {
+            height: auto;
+            min-height: 100%;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+            height: auto;
+            min-height: 100%;
+        }
+
+        /* Fluid Animation Keyframes */
+        @keyframes drift {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+
+        .fluid-blob {
+            animation: drift 10s infinite ease-in-out alternate;
+            filter: blur(80px);
+            opacity: 0.6;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f97316;
+        }
+
+        /* Glowing Border Animation */
+        @keyframes spin-border {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .border-glow-spin {
+            animation: spin-border 4s linear infinite;
+        }
+
+        /* 滚动动画效果 */
+        .section-fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            filter: blur(25px);
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                        transform 1s cubic-bezier(0.4, 0, 0.2, 1),
+                        filter 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            visibility: hidden;
+        }
+        
+        .section-fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+            visibility: visible;
+        }
+        
+        /* 首页始终可见 */
+        #home {
+            opacity: 1 !important;
+            transform: none !important;
+            filter: none !important;
+        }
+
+        /* 按钮呼吸效果 */
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 3s ease-in-out infinite;
+        }
+
+        /* 按钮边缘光线流动效果 */
+        @keyframes border-shimmer {
+            0% { 
+                transform: rotate(0deg);
+            }
+            100% { 
+                transform: rotate(360deg);
+            }
+        }
+        .animate-border-shimmer {
+            position: absolute;
+            inset: -2px;
+            border-radius: 9999px;
+            background: conic-gradient(
+                from 0deg,
+                transparent 0deg,
+                transparent 240deg,
+                rgba(255, 255, 255, 0.9) 270deg,
+                rgba(255, 255, 255, 0.9) 300deg,
+                transparent 330deg,
+                transparent 360deg
+            );
+            animation: border-shimmer 3s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.8;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+            padding: 2px;
+        }
+        .group:hover .animate-border-shimmer {
+            opacity: 1;
+        }
+
+        /* =================================================================
+           作品展示板块 CSS (Portfolio)
+           ================================================================= */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;600&family=Syncopate:wght@400;700&display=swap');
+
+        :root {
+            --brand-orange: #f97316;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+            grid-auto-rows: 300px; 
+        }
+        .project-card {
+            position: relative; overflow: hidden;
+            border: 1px solid transparent; transition: all 0.5s var(--ease-smooth); cursor: pointer;
+        }
+        .span-8 { grid-column: span 8; }
+        .span-4 { grid-column: span 4; }
+        @media (max-width: 768px) {
+            .portfolio-grid { grid-template-columns: 1fr; grid-auto-rows: auto; }
+            .span-8, .span-4 { grid-column: span 1; height: 300px; }
+        }
+
+        .project-card img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.7s var(--ease-smooth);
+            filter: grayscale(100%) contrast(1.1);
+        }
+        .project-info {
+            position: absolute; bottom: 0; left: 0; width: 100%; padding: 30px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            transform: translateY(20px); opacity: 0; transition: all 0.5s ease;
+        }
+        .project-card:hover { border-color: var(--brand-orange); }
+        .project-card:hover img { transform: scale(1.05); filter: grayscale(0%) contrast(1); }
+        .project-card:hover .project-info { transform: translateY(0); opacity: 1; }
+
+        /* 作品详情模态框 */
+        .pf-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(20px);
+            z-index: 9999; display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; 
+            transition: all 0.5s var(--ease-smooth);
+        }
+        .pf-modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .pf-modal-container {
+            position: relative;
+            width: 90%; max-width: 1600px; height: 80vh;
+            display: flex; 
+            align-items: center;
+            opacity: 0; transform: scale(0.95);
+            transition: all 0.6s var(--ease-spring);
+        }
+        .pf-modal-overlay.active .pf-modal-container { opacity: 1; transform: scale(1); }
+
+        .pf-layer-image {
+            position: absolute;
+            right: 0; top: 0; bottom: 0;
+            width: 75%;
+            height: 100%;
+            background: #111;
+            overflow: hidden;
+            border-radius: 4px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        
+        .pf-slider-track {
+            display: flex; flex-direction: column; 
+            height: 100%; width: 100%;
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.3, 1);
+        }
+        .pf-slide-img {
+            height: 100%; width: 100%; object-fit: cover; flex-shrink: 0; display: block;
+            filter: brightness(0.8);
+        }
+
+        .pf-layer-info {
+            position: relative; z-index: 10;
+            width: 35%;
+            min-width: 400px;
+            background: rgba(15, 15, 15, 0.95);
+            border: 1px solid var(--glass-border);
+            border-left: 2px solid var(--brand-orange);
+            padding: 50px;
+            box-shadow: 20px 0 50px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column;
+            gap: 30px;
+            height: auto;
+            max-height: 90vh;
+        }
+        @media (max-width: 1024px) {
+            .pf-modal-container { flex-direction: column-reverse; height: 90vh; width: 95%; }
+            .pf-layer-image { width: 100%; height: 60%; position: relative; }
+            .pf-layer-info { width: 100%; height: 40%; min-width: auto; padding: 30px; border-left: none; border-top: 2px solid var(--brand-orange); }
+        }
+
+        .pf-title-group h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem; line-height: 1.1; font-weight: 200;
+            color: white; margin-bottom: 10px;
+        }
+        .pf-title-group span {
+            color: var(--brand-orange); font-family: 'Syncopate', sans-serif; 
+            font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase;
+        }
+
+        .pf-desc {
+            font-size: 0.95rem; line-height: 1.8; color: #888;
+            border-left: 1px solid rgba(255,255,255,0.1); padding-left: 20px;
+        }
+
+        .pf-hud-bar {
+            display: flex; gap: 30px;
+            padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .pf-hud-item { display: flex; flex-direction: column; }
+        .pf-hud-item label { font-size: 0.6rem; color: #555; text-transform: uppercase; letter-spacing: 1px; font-family: 'Syncopate', sans-serif; margin-bottom: 4px; }
+        .pf-hud-item span { font-size: 0.9rem; color: #ddd; }
+
+        .pf-nav-group {
+            position: absolute; bottom: 0; right: 0;
+            display: flex; background: #111;
+            z-index: 20;
+        }
+        .pf-nav-btn {
+            width: 60px; height: 60px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white; cursor: pointer; transition: all 0.2s;
+        }
+        .pf-nav-btn:hover { background: var(--brand-orange); border-color: var(--brand-orange); color: black; }
+
+        .pf-close-float {
+            position: absolute; top: -20px; right: -20px; z-index: 50;
+            width: 50px; height: 50px; border-radius: 50%;
+            background: #000; border: 1px solid var(--glass-border);
+            color: white; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .pf-close-float:hover { border-color: var(--brand-orange); color: var(--brand-orange); transform: rotate(90deg); }
+
+        .pf-action-btn {
+            padding: 15px 0;
+            background: transparent; border: 1px solid rgba(255,255,255,0.2);
+            color: white; font-family: 'Syncopate', sans-serif; font-size: 0.7rem; letter-spacing: 2px;
+            text-transform: uppercase; cursor: pointer; transition: all 0.3s;
+            text-align: center; width: 100%;
+        }
+        .pf-action-btn:hover { background: var(--brand-orange); border-color: var(--brand-orange); color: black; }
+
+        /* =================================================================
+           客户评价板块 CSS
+           ================================================================= */
+        .review-card {
+            background: rgba(15, 15, 15, 0.6); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.05); padding: 40px; border-radius: 12px;
+            transform-style: preserve-3d; transform: perspective(1000px);
+            transition: transform 0.05s linear; 
+        }
+        .review-content { transform: translateZ(30px); }
+        .star-icon { color: var(--brand-orange); }
+
+        .beam-btn-container { position: relative; display: inline-block; border-radius: 999px; overflow: hidden; padding: 1px; }
+        .beam-animation {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, var(--brand-orange) 360deg);
+            animation: rotateBeam 4s linear infinite;
+        }
+        @keyframes rotateBeam { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .beam-btn-inner {
+            position: relative; z-index: 1; background: rgba(5, 5, 5, 0.95); color: white;
+            padding: 14px 40px; border-radius: 999px; letter-spacing: 1px; font-size: 14px;
+            display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s;
+        }
+        .beam-btn-inner:hover { background: rgba(20, 20, 20, 0.8); color: var(--brand-orange); }
+
+        .review-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px);
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: all 0.4s ease;
+        }
+        .review-modal-overlay.active { opacity: 1; visibility: visible; }
+        .review-modal-box {
+            width: 90%; max-width: 600px; 
+            background: rgba(15, 15, 15, 0.4);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            padding: 40px;
+            border-radius: 10px;
+            transform: scale(0.95); transition: all 0.4s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                        0 0 0 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+        .review-modal-box::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 10px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.1) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .review-modal-overlay.active .review-modal-box { transform: scale(1); }
+        
+        /* 关闭按钮样式 - 透明玻璃圆形胶囊按钮，带 beam 环绕 */
+        .review-modal-close-btn {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 24px;
+            line-height: 1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .review-modal-close-btn::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                transparent 0deg,
+                transparent 270deg,
+                rgba(249, 115, 22, 0.8) 300deg,
+                rgba(249, 115, 22, 0.8) 330deg,
+                transparent 360deg
+            );
+            animation: rotateBeam 3s linear infinite;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .review-modal-close-btn:hover::before {
+            opacity: 1;
+        }
+        .review-modal-close-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(249, 115, 22, 0.5);
+            color: #f97316;
+            transform: rotate(90deg);
+        }
+        @keyframes rotateBeam {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .custom-input {
+            width: 100%; 
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white; 
+            padding: 16px; 
+            outline: none; 
+            margin-top: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .custom-input:focus { 
+            border-color: var(--brand-orange);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+        
+        /* 星星评分样式 - 带粒子效果 */
+        .star-rating-item {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .star-rating-item.active {
+            color: var(--brand-orange);
+            transform: scale(1.2);
+        }
+        .star-particles {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+        }
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--brand-orange);
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleFloat 0.8s ease-out forwards;
+        }
+        @keyframes particleFloat {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0);
+            }
+        }
+        
+        /* 提交按钮 - 水玻璃质感 + 流光效果 */
+        .review-submit-btn {
+            position: relative;
+            width: 100%;
+            padding: 16px 32px;
+            border-radius: 9999px;
+            background: rgba(249, 115, 22, 0.2);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .review-submit-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.3) 50%,
+                transparent 70%
+            );
+            animation: shimmer 3s linear infinite;
+        }
+        .review-submit-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.5), rgba(249, 115, 22, 0.2));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .review-submit-btn:hover {
+            background: rgba(249, 115, 22, 0.3);
+            border-color: rgba(249, 115, 22, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3);
+        }
+        .review-submit-btn:hover::after {
+            opacity: 1;
+        }
+        .review-submit-btn:active {
+            transform: translateY(0);
+        }
+        .review-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+    </style>
+<link id="all-fonts-link-font-geist" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-geist">.font-geist { font-family: 'Geist', sans-serif !important; }</style><link id="all-fonts-link-font-roboto" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-roboto">.font-roboto { font-family: 'Roboto', sans-serif !important; }</style><link id="all-fonts-link-font-montserrat" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-montserrat">.font-montserrat { font-family: 'Montserrat', sans-serif !important; }</style><link id="all-fonts-link-font-poppins" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-poppins">.font-poppins { font-family: 'Poppins', sans-serif !important; }</style><link id="all-fonts-link-font-playfair" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&amp;display=swap"><style id="all-fonts-style-font-playfair">.font-playfair { font-family: 'Playfair Display', serif !important; }</style><link id="all-fonts-link-font-instrument-serif" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:wght@400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-instrument-serif">.font-instrument-serif { font-family: 'Instrument Serif', serif !important; }</style><link id="all-fonts-link-font-merriweather" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&amp;display=swap"><style id="all-fonts-style-font-merriweather">.font-merriweather { font-family: 'Merriweather', serif !important; }</style><link id="all-fonts-link-font-bricolage" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-bricolage">.font-bricolage { font-family: 'Bricolage Grotesque', sans-serif !important; }</style><link id="all-fonts-link-font-jakarta" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap"><style id="all-fonts-style-font-jakarta">.font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif !important; }</style><link id="all-fonts-link-font-manrope" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap"><style id="all-fonts-style-font-manrope">.font-manrope { font-family: 'Manrope', sans-serif !important; }</style><link id="all-fonts-link-font-space-grotesk" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-space-grotesk">.font-space-grotesk { font-family: 'Space Grotesk', sans-serif !important; }</style><link id="all-fonts-link-font-work-sans" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap"><style id="all-fonts-style-font-work-sans">.font-work-sans { font-family: 'Work Sans', sans-serif !important; }</style><link id="all-fonts-link-font-pt-serif" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&amp;display=swap"><style id="all-fonts-style-font-pt-serif">.font-pt-serif { font-family: 'PT Serif', serif !important; }</style><link id="all-fonts-link-font-geist-mono" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-geist-mono">.font-geist-mono { font-family: 'Geist Mono', monospace !important; }</style><link id="all-fonts-link-font-space-mono" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;display=swap"><style id="all-fonts-style-font-space-mono">.font-space-mono { font-family: 'Space Mono', monospace !important; }</style><link id="all-fonts-link-font-quicksand" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-quicksand">.font-quicksand { font-family: 'Quicksand', sans-serif !important; }</style><link id="all-fonts-link-font-nunito" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&amp;display=swap"><style id="all-fonts-style-font-nunito">.font-nunito { font-family: 'Nunito', sans-serif !important; }</style></head>
+<body class="bg-neutral-950 text-neutral-200 antialiased selection:bg-orange-500 selection:text-white">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- 
+        ================================================================
+        背景特效板块 (Background Effects)
+        原理：
+        1. Unicorn Studio (Web Component): 使用外部脚本渲染复杂的 WebGL 流体背景。它作为一个固定定位层(-z-10)存在。
+        2. 遮罩层 (Mask): 使用 CSS mask-image 实现上下边缘的淡入淡出，使背景不至于太抢眼。
+        调用方法：
+        - div 必须包含 data-us-project ID。
+        - 脚本会自动寻找该 ID 并注入 canvas。
+        ================================================================
+    -->
+    <div class="aura-background-component fixed top-0 w-full h-screen -z-10" data-alpha-mask="80" style="mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent)">
+        <div class="aura-background-component top-0 w-full -z-10 absolute h-full">
+            <div data-us-project="4OF29NF3HVBYQsrwPvVq" class="absolute w-full h-full left-0 top-0 -z-10"></div>
+            <script type="text/javascript">
+                // 异步加载 Unicorn Studio 渲染引擎
+                !function(){if(!window.UnicornStudio){window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js",i.onload=function(){window.UnicornStudio.isInitialized||(UnicornStudio.init(),window.UnicornStudio.isInitialized=!0)},(document.head || document.body).appendChild(i)}}();
+            </script>
+        </div>
     </div>
 
-    <!-- 导航栏 -->
-    <nav class="navbar">
-        <div class="logo">维度空间</div>
-        <div class="nav-links">
-            <a href="#home">首页</a>
-            <a href="#works">作品</a>
-            <a href="#about">关于我们</a>
-            <a href="#testimonials">用户评价</a>
-            <a href="#contact">联系方式</a>
-        </div>
-        <div class="nav-actions">
-            <button id="login-btn" class="login-btn glass-button">登录</button>
-            <div id="user-avatar" class="user-avatar" style="display: none;">
-                <img id="nav-user-avatar" class="avatar-img" src="" alt="avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.15);background:#222;" />
-                <div class="user-dropdown">
-                    <a href="#" id="user-details-link">账户详情</a>
-                    <a href="#" id="logout-link">登出</a>
-                </div>
+    <!-- Navbar -->
+    <nav class="absolute top-0 left-0 right-0 z-50 border-b border-white/5" style="background: rgba(10, 10, 10, 0.45); backdrop-filter: blur(10px) saturate(180%); -webkit-backdrop-filter: blur(10px) saturate(180%);">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 relative">
+            <a href="#home" class="flex items-center">
+                <img src="images/company-logo.png" alt="维度空间" class="h-8 w-auto hover:opacity-80 transition-opacity duration-300">
+            </a>
+            
+            <div class="hidden md:flex items-center space-x-8 text-sm text-neutral-400">
+                <a href="#work" class="hover:text-white transition-colors duration-300">作品案例</a>
+                <a href="#philosophy" class="hover:text-white transition-colors duration-300">设计哲学</a>
+                <a href="#testimonials" class="hover:text-white transition-colors duration-300">用户评价</a>
+                <a href="#services" class="hover:text-white transition-colors duration-300">服务流程</a>
+                <a href="#contact" class="hover:text-white transition-colors duration-300">联系方式</a>
             </div>
-            <a href="#contact" class="contact-btn glass-button">预约咨询</a>
+
+            <div class="flex items-center gap-4">
+                <button id="contact-btn" class="group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-offset-2 focus:ring-offset-neutral-950">
+                    <span class="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#171717_0%,#f97316_50%,#171717_100%)]"></span>
+                    <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950 px-5 text-xs font-medium text-neutral-300 backdrop-blur-3xl transition-colors group-hover:text-white">
+                        联系我们
+                    </span>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <!-- 主内容区 -->
-    <main class="main-content">
-        <!-- 首页区域 -->
-        <section id="home" class="home-section">
-            <h1 class="studio-name">
-                <span class="dimension">维度</span>
-                <span class="space">空间</span>
-            </h1>
-            <p class="tagline">探索无限可能的空间设计</p>
-            <div class="cta-buttons">
-                <a href="#works" id="browse-works-btn" class="primary-btn glass-button">浏览作品</a>
-                <a href="#contact" id="appointment-btn" class="contact-btn glass-button">预约咨询</a>
-            </div>
-        </section>
+    <!-- Hero Section -->
+    <header id="home" class="flex min-h-screen flex-col overflow-hidden pt-20 relative items-center justify-center">
+        <!-- Background Fluid Effects -->
+        <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <div class="fluid-blob absolute -top-20 left-1/4 h-96 w-96 rounded-full bg-orange-600/20 mix-blend-screen"></div>
+            <div class="fluid-blob absolute top-1/2 right-1/4 h-80 w-80 rounded-full bg-neutral-800/20 mix-blend-screen" style="animation-delay: -2s;"></div>
+            <div class="fluid-blob absolute bottom-0 left-1/3 h-[500px] w-[500px] rounded-full bg-neutral-800/30 mix-blend-overlay" style="animation-delay: -5s;"></div>
+        </div>
 
-        <!-- 作品展示区域 (React 挂载点) -->
-        <section id="works" class="works-section" style="display: block !important; visibility: visible !important; min-height: 600px; background: transparent !important;">
-            <!-- React 组件挂载点 - 初始显示，让 React 组件自己处理加载状态 -->
-            <div id="portfolio-root" style="display: block; visibility: visible; opacity: 1; min-height: 600px;"></div>
-        </section>
+        <!-- Canvas for Particles -->
+        <canvas class="xl:bg-clip-text xl:text-transparent bg-[conic-gradient(from_180deg,var(--tw-gradient-stops))] from-white/10 to-white/0 opacity-40 z-10 absolute top-0 right-0 bottom-0 left-0" width="1432" height="913" id="hero-particles"></canvas>
 
-        <!-- 关于我们区域 -->
-        <section id="about" class="about-section">
-            <h2 class="section-title">关于维度空间</h2>
-            <div class="about-content">
-                <p>维度空间是一家专注于高品质空间设计的工作室，我们相信每一个空间都有其独特的灵魂和无限的可能。</p>
-                <p>我们的设计团队由经验丰富的设计师组成，致力于将客户的愿景转化为令人惊叹的空间体验。无论是住宅、商业还是办公空间，我们都能提供专业、创新且实用的设计解决方案。</p>
-                <div class="design-philosophy">
-                    <h3>设计理念</h3>
-                    <p>我们追求「形随机能，美在和谐」的设计哲学，注重空间的功能性与美学价值的完美平衡。通过深入理解客户需求，结合最新的设计趋势和可持续发展理念，我们创造出既实用又富有艺术感染力的空间作品。</p>
-                </div>
-            </div>
-        </section>
+        <div class="text-center max-w-5xl z-20 mr-auto ml-auto pr-6 pl-6 relative">
+            <h1 class="md:text-7xl lg:text-8xl text-5xl font-medium text-white tracking-tight font-pt-serif mb-8">重塑您的<br class=""> <span class="bg-clip-text text-transparent font-pt-serif bg-gradient-to-r from-white via-neutral-200 to-neutral-500">空间幻想</span></h1>
+            
+            
 
-        <!-- 客户评价板块挂载点 -->
-        <section id="testimonials">
-            <div id="testimonial-root">
-                <!-- 静态骨架屏 (消除加载延迟) -->
-                <section class="relative w-full min-h-[700px] bg-transparent overflow-hidden flex flex-col items-center justify-center py-20">
-                    <div class="relative z-20 text-center mb-16 px-4">
-                        <div class="flex items-center justify-center gap-2 mb-4"><span class="w-5 h-5 text-cyan-400 animate-pulse inline-block">⚡</span><span class="text-cyan-400 font-mono tracking-[0.3em] text-xs uppercase">System Feedback</span></div>
-                        <h2 class="text-4xl md:text-6xl font-black text-white tracking-tighter mb-4 drop-shadow-lg">信号 <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-cyan-500">回响</span></h2>
-                        <div class="mt-6 flex items-center justify-center"><button class="px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white text-sm font-medium shadow-[0_0_20px_rgba(168,85,247,0.35)] border border-white/10 backdrop-blur-md">添加评价</button></div>
-                    </div>
-                    <div class="relative w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 z-20">
-                        <div class="relative bg-white/5 rounded-2xl overflow-hidden h-[240px] animate-pulse border border-white/10"><div class="p-6 absolute bottom-0 w-full"><div class="h-4 w-1/2 bg-white/10 rounded mb-2"></div><div class="h-3 w-3/4 bg-white/10 rounded"></div></div></div>
-                        <div class="relative bg-white/5 rounded-2xl overflow-hidden h-[240px] animate-pulse border border-white/10"><div class="p-6 absolute bottom-0 w-full"><div class="h-4 w-1/2 bg-white/10 rounded mb-2"></div><div class="h-3 w-3/4 bg-white/10 rounded"></div></div></div>
-                        <div class="relative bg-white/5 rounded-2xl overflow-hidden h-[240px] animate-pulse border border-white/10"><div class="p-6 absolute bottom-0 w-full"><div class="h-4 w-1/2 bg-white/10 rounded mb-2"></div><div class="h-3 w-3/4 bg-white/10 rounded"></div></div></div>
-                    </div>
-                </section>
-            </div>
-        </section>
-
-        <!-- 联系方式区域 -->
-        <section id="contact" class="contact-section">
-            <h2 class="section-title">联系我们</h2>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <p><strong>地址：</strong>新疆阿克苏新和县迎宾花园小区门面房</p>
-                    <p><strong>电话：</strong>17772297239</p>
-                    <p><strong>邮箱：</strong>1810266895@qq.com</p>
-                    <!-- 地图容器 -->
-                    <div id="map-container" style="width: 100%; height: 400px; margin-top: 30px; border-radius: 15px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);"></div>
-                </div>
-                <form class="contact-form">
-                    <input type="text" id="contact-name" placeholder="您的姓名" required>
-                    <input type="tel" id="contact-phone" placeholder="您的电话" required>
-                    <textarea id="contact-message" placeholder="您的需求描述" required></textarea>
-                    <button type="submit" class="submit-btn glass-button">发送信息</button>
-                </form>
-            </div>
-        </section>
-    </main>
-
-    <!-- 页脚 -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-logo">
-                    <h3>维度空间</h3>
-                    <p>探索无限可能的空间设计</p>
-                </div>
-            <div class="footer-links">
-                <a href="#home">首页</a>
-                <a href="#works">作品</a>
-                <a href="#about">关于我们</a>
-                <a href="#contact">联系方式</a>
-            </div>
-            <div class="footer-social">
-                <a href="#" id="wechat-link">微信</a>
+            <p class="leading-relaxed text-lg font-light text-zinc-400 max-w-2xl mr-auto mb-10 ml-auto">维度空间设计工作室满足您的定制需求以及空间布置的想象</p><div class="flex flex-col gap-4 sm:flex-row sm:justify-center gap-x-4 gap-y-4 items-center">
+                <!-- Primary Action Button with Flow Effect -->
+                <a href="#work" class="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full p-[1px] shadow-[0_0_20px_-5px_rgba(249,115,22,0.4)] transition-shadow duration-300 hover:shadow-[0_0_25px_-5px_rgba(249,115,22,0.6)]">
+                    <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#000000_0%,#f97316_50%,#000000_100%)]"></span>
+                    <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950 px-8 text-sm font-medium text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900">
+                        探索作品集
+                        <iconify-icon icon="lucide:arrow-right" class="ml-2 text-lg text-orange-500"></iconify-icon>
+                    </span>
+                </a>
+                
+                <a href="#services" class="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full p-[1px]">
+                    <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#000000_0%,#ffffff_50%,#000000_100%)]"></span>
+                    <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950 px-8 text-sm font-medium text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900 relative z-10">
+                        了解服务
+                    </span>
+                </a>
             </div>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; 2023 维度空间 装修设计工作室. All rights reserved.</p>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 z-20 -translate-x-1/2 animate-bounce">
+            <iconify-icon icon="lucide:chevrons-down" class="text-2xl text-neutral-600"></iconify-icon>
+        </div>
+    </header>
+
+    <!-- Stats / Trust Section -->
+    <section class="border-y border-white/5 bg-neutral-950/50 py-12 backdrop-blur-sm section-fade-in">
+        <div class="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 md:grid-cols-4">
+            <div class="text-center md:text-left">
+                <h3 class="text-3xl font-semibold tracking-tight text-white">8 Year+</h3>
+                <p class="mt-1 text-xs uppercase tracking-widest text-neutral-500">从事室内设计</p>
+            </div>
+            <div class="text-center md:text-left">
+                <h3 class="text-3xl font-semibold tracking-tight text-white">
+                    <span class="counter-number" data-target="100">0</span>+
+                </h3>
+                <p class="mt-1 text-xs uppercase tracking-widest text-neutral-500">设计案例</p>
+            </div>
+            <div class="text-center md:text-left">
+                <h3 class="text-3xl font-semibold tracking-tight text-white">
+                    <span class="counter-number" data-target="40">0</span>+
+                </h3>
+                <p class="mt-1 text-xs uppercase tracking-widest text-neutral-500">可定制板块</p>
+            </div>
+            <div class="text-center md:text-left">
+                <div class="flex flex-col items-center md:items-start">
+                    <h3 class="text-3xl font-semibold tracking-tight text-white mb-1" style="transform: translateX(3px);">∞</h3>
+                    <p class="text-xs uppercase tracking-widest text-neutral-500">整体创意想法</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Philosophy Section -->
+    <section id="philosophy" class="md:py-32 pt-24 pb-24 relative section-fade-in">
+        <div class="mx-auto max-w-7xl px-6">
+            <div class="grid gap-16 md:grid-cols-2 md:items-center">
+                <div class="relative">
+                    <div class="absolute -left-4 -top-4 h-24 w-24 rounded-full border border-orange-500/20 bg-transparent blur-sm"></div>
+                    <h2 class="relative text-3xl font-medium tracking-tight text-white md:text-4xl">
+                        感知材质的温度，<br>
+                        构建<span class="text-orange-500">理性</span>与<span class="text-orange-500">感性</span>共存的场域。
+                    </h2>
+                    <p class="mt-6 text-neutral-400 font-light leading-relaxed">
+                        设计不仅是关于形式的艺术，更是关于触感与细节的工艺。我们擅长利用天然石材、温润木质与现代金属的碰撞，构建出层次丰富的空间情绪。我们关注每一个接缝的工艺、每一处灯光的落点。在维度空间工作室，我们致力于在美学直觉与工程严谨之间寻找最佳平衡点，打造出一种宁静、纯粹且富有力量感的居住美学。
+                    </p>
+                    
+                    <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-orange-500/30 hover:bg-white/[0.04]">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-orange-500">
+                                <iconify-icon icon="lucide:zap" width="20"></iconify-icon>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-white">全案落地管控</h4>
+                                <p class="mt-1 text-xs text-neutral-500">从项目预览到施工监造，确保设计 1:1 完美呈现。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-orange-500/30 hover:bg-white/[0.04]">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-orange-500">
+                                <iconify-icon icon="lucide:layers" width="20"></iconify-icon>
+                            </div>
+                            <div class="">
+                                <h4 class="text-sm font-medium text-white">专属定制系统</h4>
+                                <p class="mt-1 text-xs text-neutral-500">摒弃千篇一律的模板，为您定制难以复制的私属体验。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative aspect-square overflow-hidden rounded-2xl bg-neutral-900 md:aspect-[4/5] cursor-crosshair" id="scratch-image-container">
+                    <!-- 底层图片（结果图 - 装修后） -->
+                    <img 
+                        src="https://dl.img.timecdn.cn/2025/12/07/zhuangxiu.jpg" 
+                        alt="Finished Design" 
+                        class="h-full w-full object-cover absolute inset-0 z-0 select-none pointer-events-none"
+                    >
+                    
+                    <!-- 覆盖层Canvas（初始图 - 装修前，被刮开显示） -->
+                    <canvas id="scratch-canvas" class="absolute inset-0 z-20 w-full h-full"></canvas>
+                    
+                    <!-- 特效层Canvas（橙色粒子） -->
+                    <canvas id="scratch-fx-canvas" class="absolute inset-0 z-30 w-full h-full pointer-events-none"></canvas>
+                    
+                    <!-- 交互层 -->
+                    <div id="scratch-interaction-layer" class="absolute inset-0 z-40 w-full h-full cursor-crosshair touch-none"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         作品展示板块 (Work Gallery)
+         ================================================================= -->
+    <section id="work" class="relative z-10 py-32 container mx-auto px-6 section-fade-in">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-white/10 pb-8">
+            <div>
+                <span class="text-orange-500 font-['Syncopate'] text-xs tracking-[0.2em] block mb-2">SELECTED WORKS</span>
+                <h2 class="text-5xl font-light tracking-tight text-white">作品案例</h2>
+            </div>
+            <p class="text-neutral-500 text-sm max-w-md text-right mt-6 md:mt-0 leading-relaxed">
+                穿越物理与数字的边界。<br>探索那些重新定义居住体验的空间实验。
+            </p>
+        </div>
+
+        <div class="portfolio-grid" id="portfolioGrid">
+            <!-- 动态生成 -->
+        </div>
+
+        <div class="mt-16 text-center">
+            <button class="border border-white/20 text-white px-8 py-3 text-xs uppercase font-['Syncopate'] hover:border-orange-500 hover:text-orange-500 transition-colors">
+                查看更多作品 →
+            </button>
+        </div>
+    </section>
+
+    <!-- 作品详情模态框 -->
+    <div id="pfModal" class="pf-modal-overlay">
+        <div class="pf-modal-container">
+            <!-- 层 1: 图片层 -->
+            <div class="pf-layer-image">
+                <div class="pf-slider-track" id="pfTrack">
+                    <!-- 图片 JS 插入 -->
+                </div>
+                <!-- 导航组 -->
+                <div class="pf-nav-group">
+                    <div class="pf-nav-btn" onclick="changeSlide(-1)">↑</div>
+                    <div class="pf-nav-btn" onclick="changeSlide(1)">↓</div>
+                </div>
+            </div>
+
+            <!-- 层 2: 信息层 -->
+            <div class="pf-layer-info">
+                <button class="pf-close-float" onclick="closePfModal()">✕</button>
+
+                <div class="pf-title-group">
+                    <span id="pfCategory">RESIDENTIAL</span>
+                    <h2 id="pfTitle">项目标题</h2>
+                </div>
+
+                <p class="pf-desc" id="pfDesc">
+                    项目描述
+                </p>
+
+                <!-- 底部 HUD 数据条 -->
+                <div class="pf-hud-bar">
+                    <div class="pf-hud-item">
+                        <label>Location</label>
+                        <span id="pfLoc">位置</span>
+                    </div>
+                    <div class="pf-hud-item">
+                        <label>Size</label>
+                        <span id="pfArea">面积</span>
+                    </div>
+                    <div class="pf-hud-item">
+                        <label>Cost</label>
+                        <span id="pfCost">价格</span>
+                    </div>
+                </div>
+
+                <!-- 底部操作按钮 -->
+                <div style="margin-top: auto;">
+                    <button class="pf-action-btn" onclick="document.getElementById('contact')?.scrollIntoView({behavior: 'smooth'}); closePfModal();">
+                        开始项目咨询
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Section -->
+    <section id="services" class="relative overflow-hidden py-24 bg-neutral-950 section-fade-in">
+        <!-- Radial gradient background -->
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-900/40 via-neutral-950 to-neutral-950 pointer-events-none"></div>
+
+        <div class="relative mx-auto max-w-7xl px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-medium tracking-tight text-white md:text-5xl">定制服务</h2>
+                <p class="mt-4 text-neutral-400">从概念到现实的全周期解决方案</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-6">
+    <!-- Service Card 1 -->
+    <div class="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl transition-all hover:bg-white/[0.05]" onmousemove="(function(el){const r=el.getBoundingClientRect();el.style.setProperty('--mouse-x',(event.clientX-r.left)+'px');el.style.setProperty('--mouse-y',(event.clientY-r.top)+'px');})(this)">
+        <!-- Flowing Border Light -->
+        <div class="pointer-events-none absolute inset-0 z-0 rounded-2xl p-[1px] opacity-70 transition-opacity duration-500 [mask-clip:content-box,border-box] [mask-composite:exclude] [mask-image:linear-gradient(black,black),linear-gradient(black,black)] [-webkit-mask-composite:xor]">
+            <div class="absolute inset-[-50%] left-[-50%] top-[-50%] h-[200%] w-[200%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0_300deg,#f97316_360deg)]"></div>
+        </div>
+        
+        <!-- Flashlight/Spotlight Effect -->
+        <div class="pointer-events-none absolute -inset-px z-10 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" style="background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.06), transparent 40%);"></div>
+
+        <!-- Content -->
+        <div class="relative z-20 p-8">
+            <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
+                <iconify-icon icon="lucide:monitor-smartphone" width="24"></iconify-icon>
+            </div>
+            <h3 class="mb-3 text-lg font-medium text-white">1:1 沉浸预演 <span class="text-xs text-neutral-500 font-normal">(Immersive Preview)</span></h3>
+            <p class="text-sm leading-relaxed text-neutral-400">拒绝盲盒式装修。在动工前，通过全景建模让您提前"走进"未来的家，确认每一处尺度、材质与光影细节。</p>
+        </div>
+    </div>
+
+    <!-- Service Card 2 -->
+    <div class="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl transition-all hover:bg-white/[0.05]" onmousemove="(function(el){const r=el.getBoundingClientRect();el.style.setProperty('--mouse-x',(event.clientX-r.left)+'px');el.style.setProperty('--mouse-y',(event.clientY-r.top)+'px');})(this)" style="--mouse-x: 351.34375px; --mouse-y: 132.328125px;">
+        <!-- Flowing Border Light -->
+        <div class="pointer-events-none absolute inset-0 z-0 rounded-2xl p-[1px] opacity-70 transition-opacity duration-500 [mask-clip:content-box,border-box] [mask-composite:exclude] [mask-image:linear-gradient(black,black),linear-gradient(black,black)] [-webkit-mask-composite:xor]">
+            <div class="absolute inset-[-50%] left-[-50%] top-[-50%] h-[200%] w-[200%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0_300deg,#f97316_360deg)]"></div>
+        </div>
+
+        <!-- Flashlight/Spotlight Effect -->
+        <div class="pointer-events-none absolute -inset-px z-10 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" style="background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.06), transparent 40%);"></div>
+
+        <!-- Content -->
+        <div class="relative z-20 p-8">
+            <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
+                <iconify-icon icon="lucide:box" width="24" class=""></iconify-icon>
+            </div>
+            <h3 class="mb-3 text-lg font-medium text-white">严苛施工标准 <span class="text-xs text-neutral-500 font-normal">(Craftsmanship Standards)</span></h3>
+            <p class="text-sm leading-relaxed text-neutral-400">细节决定成败。业界认可的施工工艺标准，对收口、隐蔽工程与工艺节点进行精细把控，确保工程质量经得起时间考验。</p>
+        </div>
+    </div>
+
+    <!-- Service Card 3 -->
+    <div class="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl transition-all hover:bg-white/[0.05]" onmousemove="(function(el){const r=el.getBoundingClientRect();el.style.setProperty('--mouse-x',(event.clientX-r.left)+'px');el.style.setProperty('--mouse-y',(event.clientY-r.top)+'px');})(this)" style="--mouse-x: 0.671875px; --mouse-y: 114.328125px;">
+        <!-- Flowing Border Light -->
+        <div class="pointer-events-none absolute inset-0 z-0 rounded-2xl p-[1px] opacity-70 transition-opacity duration-500 [mask-clip:content-box,border-box] [mask-composite:exclude] [mask-image:linear-gradient(black,black),linear-gradient(black,black)] [-webkit-mask-composite:xor]">
+            <div class="absolute inset-[-50%] left-[-50%] top-[-50%] h-[200%] w-[200%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0_300deg,#f97316_360deg)]"></div>
+        </div>
+
+        <!-- Flashlight/Spotlight Effect -->
+        <div class="pointer-events-none absolute -inset-px z-10 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" style="background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.06), transparent 40%);"></div>
+
+        <!-- Content -->
+        <div class="relative z-20 p-8">
+            <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
+                <iconify-icon icon="lucide:droplets" width="24"></iconify-icon>
+            </div>
+            <h3 class="mb-3 text-lg font-medium text-white">保障售后服务 <span class="text-xs text-neutral-500 font-normal">(Lifetime Service)</span></h3>
+            <p class="text-sm leading-relaxed text-neutral-400">交付不是终点。建立完善的客户档案，提供持续的维护建议与售后响应，让您的家始终保持最佳状态。</p>
+        </div>
+    </div>
+</div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         客户评价板块 (Testimonials)
+         ================================================================= -->
+    <section id="testimonials" class="relative z-10 py-32 border-t border-white/5 section-fade-in">
+        <div class="container mx-auto px-6 relative">
+            <div class="text-center mb-20">
+                <span class="text-orange-500 font-['Syncopate'] text-xs tracking-[0.2em] uppercase">Testimonials</span>
+                <h2 class="text-4xl md:text-5xl font-light mt-4 text-white">客户评价</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="reviewGrid">
+                <!-- JS 生成内容 -->
+            </div>
+
+            <div class="mt-20 text-center">
+                <div class="beam-btn-container" onclick="openReviewModal()">
+                    <div class="beam-animation"></div>
+                    <button class="beam-btn-inner">
+                        <span>发表我的评价</span>
+                        <span>+</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 评价发表模态框 -->
+    <div id="reviewModal" class="review-modal-overlay">
+        <div class="review-modal-box">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl text-white">发表评价</h3>
+                <button onclick="closeReviewModal()" class="review-modal-close-btn" aria-label="关闭">×</button>
+            </div>
+            <form id="reviewForm" onsubmit="event.preventDefault(); submitReview();">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-neutral-400 mb-2">您的称呼</label>
+                        <input type="text" id="reviewName" class="custom-input" placeholder="请输入您的称呼（选填）">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-neutral-400 mb-2">评分</label>
+                        <div id="reviewRating" class="flex gap-2">
+                            <span class="star-rating-item text-2xl cursor-pointer text-neutral-600 hover:text-orange-500" data-rating="1">★</span>
+                            <span class="star-rating-item text-2xl cursor-pointer text-neutral-600 hover:text-orange-500" data-rating="2">★</span>
+                            <span class="star-rating-item text-2xl cursor-pointer text-neutral-600 hover:text-orange-500" data-rating="3">★</span>
+                            <span class="star-rating-item text-2xl cursor-pointer text-neutral-600 hover:text-orange-500" data-rating="4">★</span>
+                            <span class="star-rating-item text-2xl cursor-pointer text-neutral-600 hover:text-orange-500" data-rating="5">★</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-neutral-400 mb-2">评价内容</label>
+                        <textarea id="reviewContent" class="custom-input h-32 resize-none" placeholder="分享您的体验..." required></textarea>
+                    </div>
+                    <button type="submit" id="reviewSubmitBtn" class="review-submit-btn mt-4">
+                        <span style="position: relative; z-index: 1;">提交评价</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 联系方式区域 -->
+    <section id="contact" class="pt-24 pb-24 relative section-fade-in">
+        <div class="mx-auto max-w-7xl px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-medium tracking-tight text-white md:text-5xl">联系我们</h2>
+                <p class="mt-4 text-neutral-400">预约一次深度咨询，让我们探讨如何将未来带入您的生活</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12">
+                <!-- 联系信息 -->
+                <div class="space-y-6">
+                    <div class="p-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl">
+                        <h3 class="text-lg font-medium text-white mb-4">联系方式</h3>
+                        <div class="space-y-3 text-neutral-400">
+                            <p><strong class="text-white">地址：</strong>新疆阿克苏新和县迎宾花园小区门面房</p>
+                            <p><strong class="text-white">电话：</strong>17772297239</p>
+                            <p><strong class="text-white">邮箱：</strong>1810266895@qq.com</p>
+                        </div>
+                    </div>
+                    <!-- 地图容器 -->
+                    <div id="map-container" class="w-full h-96 rounded-2xl overflow-hidden border border-white/10"></div>
+                </div>
+                
+                <!-- 联系表单 -->
+                <div class="p-8 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl">
+                    <form class="contact-form space-y-6">
+                        <div>
+                            <label for="contact-name" class="block text-sm font-medium text-white mb-2">您的姓名</label>
+                            <input type="text" id="contact-name" placeholder="请输入您的姓名" required 
+                                class="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-white/10 text-white placeholder-neutral-500 focus:outline-none focus:border-orange-500/50 transition-colors">
+                        </div>
+                        <div>
+                            <label for="contact-phone" class="block text-sm font-medium text-white mb-2">您的电话</label>
+                            <input type="tel" id="contact-phone" placeholder="请输入您的电话" required 
+                                class="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-white/10 text-white placeholder-neutral-500 focus:outline-none focus:border-orange-500/50 transition-colors">
+                        </div>
+                        <div>
+                            <label for="contact-message" class="block text-sm font-medium text-white mb-2">您的需求描述</label>
+                            <textarea id="contact-message" placeholder="请详细描述您的需求..." required rows="6"
+                                class="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-white/10 text-white placeholder-neutral-500 focus:outline-none focus:border-orange-500/50 transition-colors resize-none"></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn w-full group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full p-[1px]">
+                            <span class="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#000000_0%,#f97316_50%,#000000_100%)]"></span>
+                            <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950 px-8 text-sm font-medium text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900">
+                                发送信息
+                            </span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 bg-neutral-950 py-12 text-sm">
+        <div class="mx-auto max-w-7xl px-6">
+            <!-- 主要内容和链接 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <!-- 品牌信息 -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2">
+                        <img src="images/company-logo.png" alt="维度空间" class="h-6 w-6 object-contain">
+                        <span class="font-semibold tracking-tight text-white">维度空间</span>
+                    </div>
+                    <p class="text-neutral-400 text-xs leading-relaxed">
+                        重塑有温度的真实人居，为您打造理想的生活空间。
+                    </p>
+                    <div class="relative">
+                        <button id="wechat-btn" class="flex items-center gap-2 text-neutral-400 hover:text-orange-500 transition-colors">
+                            <iconify-icon icon="mdi:wechat" width="20"></iconify-icon>
+                            <span>微信咨询</span>
+                        </button>
+                        <div id="wechat-qrcode" class="hidden absolute bottom-full left-0 mb-2 p-4 bg-neutral-900 border border-white/10 rounded-lg shadow-xl z-50">
+                            <div class="w-32 h-32 bg-neutral-800 border border-white/10 rounded flex items-center justify-center text-neutral-500 text-xs">
+                                二维码占位符
+                            </div>
+                            <p class="text-xs text-neutral-400 mt-2 text-center">扫码添加微信</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 服务时间 -->
+                <div class="space-y-4">
+                    <h3 class="text-white font-medium text-sm">服务时间</h3>
+                    <ul class="space-y-2 text-neutral-400 text-xs">
+                        <li>周一至周五：9:00 - 18:00</li>
+                        <li>周六：10:00 - 17:00</li>
+                        <li>周日：预约制</li>
+                    </ul>
+                    <div class="pt-2">
+                        <a href="#contact" class="inline-flex items-center gap-2 text-orange-500 hover:text-orange-400 transition-colors text-xs">
+                            <span>立即咨询</span>
+                            <iconify-icon icon="lucide:arrow-right" width="14"></iconify-icon>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 底部版权信息 -->
+            <div class="border-t border-white/5 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-neutral-600 text-xs">
+                    © 2024 维度空间 装修设计工作室. All rights reserved.
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
+                        <iconify-icon icon="simple-icons:cpanel" class="text-neutral-400 hover:text-orange-500 transition-colors" width="28" height="28"></iconify-icon>
+                        <iconify-icon icon="simple-icons:credly" class="text-neutral-400 hover:text-orange-500 transition-colors" width="28" height="28"></iconify-icon>
+                        <iconify-icon icon="simple-icons:bentoml" class="text-neutral-400 hover:text-orange-500 transition-colors" width="28" height="28"></iconify-icon>
+                    </div>
+                    <span class="text-xs text-neutral-500">专业 · 创新 · 品质</span>
+                </div>
+            </div>
         </div>
     </footer>
 
-    <!-- 服务信息模态框 -->
-    <div id="services-modal" class="modal">
-        <div class="modal-content">
-            <h3>我们的服务</h3>
-            <div class="services-list">
-                <div class="service-item">
-                    <h4>住宅空间设计</h4>
-                    <p>为您的家打造舒适、美观且实用的居住环境，包括客厅、卧室、厨房、卫生间等空间的全面设计。</p>
-                </div>
-                <div class="service-item">
-                    <h4>商业空间设计</h4>
-                    <p>针对餐厅、咖啡厅、零售店等商业场所，创造独特且具有吸引力的空间氛围，提升品牌形象。</p>
-                </div>
-                <div class="service-item">
-                    <h4>办公空间设计</h4>
-                    <p>设计高效、舒适的办公环境，满足企业需求并提升员工工作效率和创造力。</p>
-                </div>
-                <div class="service-item">
-                    <h4>3D效果图制作</h4>
-                    <p>提供高质量的3D效果图，帮助您直观了解设计方案，提前预览空间效果。</p>
-                </div>
-                <div class="service-item">
-                    <h4>装修监理服务</h4>
-                    <p>全程监督装修过程，确保施工质量和设计方案的准确实施。</p>
-                </div>
-            </div>
-            <button id="close-services-modal" class="close-modal-btn glass-button">关闭</button>
-        </div>
-    </div>
+    <!-- Particles Script -->
+    <script>
+        const canvas = document.getElementById('hero-particles');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        
+        // Configuration
+        const particleCount = 60;
+        const connectionDistance = 150;
+        const mouseDistance = 200;
 
-    <!-- 联系信息模态框 -->
-    <div id="contact-modal" class="modal">
-        <div class="modal-content">
-            <h3>联系我们</h3>
-            <div class="modal-contact-info">
-                <p><strong>地址：</strong>新疆阿克苏新和县迎宾花园小区门面房</p>
-                <p><strong>电话：</strong>17772297239</p>
-                <p><strong>邮箱：</strong>1810266895@qq.com</p>
-                <p><strong>营业时间：</strong>周一至周日 10:00 - 20:00</p>
-            </div>
-            <button id="close-contact-modal" class="close-modal-btn glass-button">关闭</button>
-        </div>
-    </div>
+        // Resize
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
-    <!-- 登录/注册模态框 -->
-    <div id="auth-modal" class="modal">
-        <!-- 2. 核心卡片：毛玻璃效果，深色背景，发光边框 -->
-        <div class="modal-content auth-card">
-            <!-- 关闭按钮 (右上角) -->
-            <button id="close-auth-modal" class="close-auth-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+        // Mouse tracking
+        let mouse = { x: null, y: null };
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        // Particle Class
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 1.5 + 0.5;
+                this.color = Math.random() > 0.9 ? 'rgba(249, 115, 22, ' : 'rgba(255, 255, 255, '; // Orange or White
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Bounce off edges
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                // Mouse interaction
+                if (mouse.x != null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < mouseDistance) {
+                        const forceDirectionX = dx / distance;
+                        const forceDirectionY = dy / distance;
+                        const force = (mouseDistance - distance) / mouseDistance;
+                        const directionX = forceDirectionX * force * 2; // Push away strength
+                        const directionY = forceDirectionY * force * 2;
+                        this.x -= directionX;
+                        this.y -= directionY;
+                    }
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color + '0.6)';
+                ctx.fill();
+            }
+        }
+
+        // Init Particles
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        // Animation Loop
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
             
-            <div class="auth-card-inner">
-                <!-- 3. 标题区：渐变色文字 -->
-                <h3 id="auth-modal-title" class="auth-title">欢迎回来</h3>
-                <p class="auth-subtitle">登录维度空间</p>
-                
-                <!-- 登录表单 -->
-                <div id="login-form" class="auth-form">
-                    <div class="form-group">
-                        <label for="login-email">邮箱地址</label>
-                        <input type="email" id="login-email" placeholder="name@example.com" required>
-                    </div>
-                    <div class="form-group">
-                        <div class="label-row">
-                            <label for="login-password">密码</label>
-                            <a href="#" id="forgot-password-link" class="forgot-link">忘记密码？</a>
-                        </div>
-                        <input type="password" id="login-password" placeholder="••••••••" required>
-                    </div>
-                    
-                    <!-- 5. 登录按钮：全宽，醒目渐变 -->
-                    <button type="submit" id="login-submit-btn" class="auth-submit-btn">立即登录</button>
-                    
-                    <!-- 底部链接 -->
-                    <div class="form-footer">
-                        <span class="text-muted">还没有账号？</span>
-                        <a href="#" id="switch-to-register" class="text-link-bold">立即注册</a>
-                    </div>
-                </div>
-                
-                <!-- 注册表单 (保持结构一致) -->
-                <div id="register-form" class="auth-form" style="display: none;">
-                    <div class="form-group">
-                        <label for="register-username">用户名</label>
-                        <input type="text" id="register-username" placeholder="请输入用户名" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-email">邮箱地址</label>
-                        <input type="email" id="register-email" placeholder="name@example.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-phone">手机号（选填）</label>
-                        <input type="tel" id="register-phone" placeholder="请输入手机号">
-                    </div>
-                    <div class="form-group">
-                        <label for="register-password">密码</label>
-                        <input type="password" id="register-password" placeholder="请设置密码，至少8位" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-confirm-password">确认密码</label>
-                        <input type="password" id="register-confirm-password" placeholder="请再次输入密码" required>
-                    </div>
-                    
-                    <button type="submit" id="register-submit-btn" class="auth-submit-btn">立即注册</button>
-                    
-                    <div class="form-footer">
-                        <span class="text-muted">已有账号？</span>
-                        <a href="#" id="switch-to-login" class="text-link-bold">立即登录</a>
-                    </div>
-                </div>
-                
-                <!-- 错误消息区域 -->
-                <div id="auth-error" class="auth-error" style="display: none;"></div>
-            </div>
-        </div>
-    </div>
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
 
-    <!-- 个人资料模态框 -->
-    <div id="profile-modal" class="modal">
-        <div class="modal-content" style="position:relative;">
-            <button id="close-profile-modal" class="close-auth-icon" style="position:fixed;top:20px;right:24px;z-index:1002;">✕</button>
-            <h3>个人资料</h3>
-            <div class="services-list" style="display:grid;grid-template-columns:1fr;gap:12px;">
-                <div style="display:flex;align-items:center;gap:14px;">
-                    <img id="profile-avatar-preview" src="" alt="avatar" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.15)" />
-                    <div>
-                        <input type="file" id="profile-avatar" accept="image/*" style="display:none">
-                        <button id="profile-avatar-btn" class="glass-button" style="padding:8px 14px;border:1px solid rgba(168,85,247,0.35);background:linear-gradient(90deg, rgba(168,85,247,0.18), rgba(6,182,212,0.18));color:#fff;">更改头像</button>
-                        <div style="font-size:12px;color:#888;margin-top:6px;">建议使用清晰头像图片</div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="profile-nick">姓名</label>
-                    <input type="text" id="profile-nick" placeholder="请输入姓名">
-                </div>
-                <div class="form-group">
-                    <label for="profile-nickname">昵称</label>
-                    <input type="text" id="profile-nickname" placeholder="请输入昵称">
-                </div>
-                <div class="form-group">
-                    <label for="profile-phone">电话</label>
-                    <input type="tel" id="profile-phone" placeholder="请输入电话">
-                </div>
-                <div class="form-group">
-                    <label for="profile-email">邮箱（不可编辑）</label>
-                    <input type="email" id="profile-email" placeholder="name@example.com" disabled style="opacity:0.6">
-                </div>
-            </div>
-            <div style="display:flex;gap:12px;justify-content:flex-end;">
-                <button id="save-profile-btn" class="glass-button">保存</button>
-            </div>
-        </div>
-    </div>
+                // Draw Connections
+                for (let j = i; j < particles.length; j++) {
+                    let dx = particles[i].x - particles[j].x;
+                    let dy = particles[i].y - particles[j].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < connectionDistance) {
+                        ctx.beginPath();
+                        let opacity = 1 - (distance / connectionDistance);
+                        ctx.strokeStyle = 'rgba(255, 255, 255,' + (opacity * 0.15) + ')';
+                        ctx.lineWidth = 1;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+
 
     <!-- 作品详情模态框 -->
-    <div id="work-detail-modal" class="modal">
-        <div class="modal-content" id="work-detail-card">
-            <h3>作品详情</h3>
+    <div id="work-detail-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div id="work-detail-card" class="relative w-full max-w-4xl bg-neutral-900 border border-white/10 rounded-2xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <button id="close-work-detail" class="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors">
+                <iconify-icon icon="lucide:x" width="24"></iconify-icon>
+            </button>
+            <h3 class="text-2xl font-medium text-white mb-6">作品详情</h3>
             <div id="work-detail-body"></div>
-            <button id="close-work-detail" class="close-modal-btn glass-button">关闭</button>
         </div>
     </div>
 
+    <!-- 个人资料模态框 - 已删除 -->
+    <!--
+    <div id="profile-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="relative w-full max-w-md mx-4">
+            <div class="bg-neutral-900 border border-white/10 rounded-2xl p-8 shadow-2xl">
+                <button id="close-profile-modal" class="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors">
+                    <iconify-icon icon="lucide:x" width="24"></iconify-icon>
+                </button>
+                <h3 class="text-2xl font-medium text-white mb-6">个人资料</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4">
+                        <img id="profile-avatar-preview" src="" alt="avatar" class="w-16 h-16 rounded-full object-cover border border-white/20" />
+                        <div>
+                            <input type="file" id="profile-avatar" accept="image/*" class="hidden">
+                            <button id="profile-avatar-btn" class="px-4 py-2 rounded-lg bg-neutral-800 border border-white/10 text-white text-sm hover:bg-neutral-700 transition-colors">
+                                更改头像
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="profile-nick" class="block text-sm font-medium text-white mb-2">姓名</label>
+                        <input type="text" id="profile-nick" placeholder="请输入姓名" 
+                            class="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-500 focus:outline-none focus:border-orange-500/50">
+                    </div>
+                    <div>
+                        <label for="profile-nickname" class="block text-sm font-medium text-white mb-2">昵称</label>
+                        <input type="text" id="profile-nickname" placeholder="请输入昵称" 
+                            class="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-500 focus:outline-none focus:border-orange-500/50">
+                    </div>
+                    <div>
+                        <label for="profile-phone" class="block text-sm font-medium text-white mb-2">电话</label>
+                        <input type="tel" id="profile-phone" placeholder="请输入电话" 
+                            class="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-500 focus:outline-none focus:border-orange-500/50">
+                    </div>
+                    <div>
+                        <label for="profile-email" class="block text-sm font-medium text-white mb-2">邮箱（不可编辑）</label>
+                        <input type="email" id="profile-email" disabled 
+                            class="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-neutral-500 cursor-not-allowed">
+                    </div>
+                    <button id="save-profile-btn" class="w-full h-12 rounded-full bg-gradient-to-r from-orange-600 to-orange-500 text-white font-medium hover:from-orange-500 hover:to-orange-400 transition-all">
+                        保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    -->
+
+
+    <!-- 必要的脚本 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
     <script src="app.js?v=fix1"></script>
     <script src="navbar-scroll.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- 百度地图 API - 使用 v2.0 版本（v3.0 可能不兼容） -->
-    <!-- 获取密钥：https://lbsyun.baidu.com/apiconsole/key -->
+    <!-- 百度地图 API -->
     <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=jfvWkRaS03ugguI4feuoyygvgucI3Q7Y&callback=initBaiduMapCallback"></script>
     <script>
-        // 地图 API 加载完成后的回调
         window.initBaiduMapCallback = function() {
-            console.log('百度地图 API 加载完成，BMap 对象:', typeof BMap);
-            // API 加载完成后初始化地图
+            console.log('百度地图 API 加载完成');
             if (typeof window.initBaiduMap === 'function') {
                 setTimeout(window.initBaiduMap, 100);
             } else {
-                console.warn('initBaiduMap 函数未找到，等待 app.js 加载...');
-                // 如果 app.js 还没加载，等待一下
                 setTimeout(() => {
                     if (typeof window.initBaiduMap === 'function') {
                         window.initBaiduMap();
-                    } else {
-                        console.error('initBaiduMap 函数仍未找到');
                     }
                 }, 500);
             }
         };
     </script>
+    <!-- 作品展示和评价展示 JavaScript -->
+    <script>
+        // 作品展示逻辑
+        let currentImgIndex = 0;
+        let currentProjectImages = [];
+        const track = document.getElementById('pfTrack');
+        const modal = document.getElementById('pfModal');
+
+        function openPfModal(data) {
+            if (!data) return;
+            document.getElementById('pfCategory').innerText = data.category || '';
+            document.getElementById('pfTitle').innerText = data.title || '';
+            document.getElementById('pfDesc').innerText = data.desc || '';
+            document.getElementById('pfLoc').innerText = data.location || '';
+            document.getElementById('pfArea').innerText = data.area || '';
+            document.getElementById('pfCost').innerText = data.cost || '';
+
+            currentProjectImages = data.images || [];
+            currentImgIndex = 0;
+            if (track) {
+                track.innerHTML = ''; 
+                currentProjectImages.forEach(src => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.className = 'pf-slide-img';
+                    track.appendChild(img);
+                });
+                updateSliderPosition();
+            }
+
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closePfModal() {
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function changeSlide(direction) {
+            const count = currentProjectImages.length;
+            if (count === 0) return;
+            currentImgIndex = currentImgIndex + direction;
+            if (currentImgIndex < 0) currentImgIndex = count - 1;
+            if (currentImgIndex >= count) currentImgIndex = 0;
+            updateSliderPosition();
+        }
+
+        function updateSliderPosition() {
+            if (track) {
+                track.style.transform = `translateY(-${currentImgIndex * 100}%)`;
+            }
+        }
+
+        // 评价展示逻辑
+        function handleTilt(e, card) {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left; 
+            const y = e.clientY - rect.top;  
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -15; 
+            const rotateY = ((x - centerX) / centerX) * 15;  
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+        }
+
+        function resetTilt(card) {
+            card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale(1)`;
+        }
+
+        let currentRating = 5;
+
+        function openReviewModal() {
+            const reviewModal = document.getElementById('reviewModal');
+            if (reviewModal) {
+                reviewModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
+                // 初始化评分显示
+                updateRatingDisplay(5);
+                currentRating = 5;
+                
+                // 添加评分点击事件（带粒子效果）
+                const ratingStars = document.querySelectorAll('#reviewRating .star-rating-item');
+                ratingStars.forEach((star, index) => {
+                    star.onclick = () => {
+                        currentRating = index + 1;
+                        updateRatingDisplay(currentRating);
+                        // 创建粒子效果，点击的星星越多，粒子越多
+                        const particleCount = (index + 1) * 8;
+                        createStarParticles(star, particleCount);
+                    };
+                });
+            }
+        }
+
+        function updateRatingDisplay(rating) {
+            const stars = document.querySelectorAll('#reviewRating .star-rating-item');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('text-neutral-600');
+                    star.classList.add('text-orange-500', 'active');
+                } else {
+                    star.classList.remove('text-orange-500', 'active');
+                    star.classList.add('text-neutral-600');
+                }
+            });
+        }
+        
+        // 创建粒子效果
+        function createStarParticles(starElement, count) {
+            const rect = starElement.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const angle = (Math.PI * 2 * i) / count;
+                const distance = 30 + Math.random() * 20;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+                particle.style.left = centerX + 'px';
+                particle.style.top = centerY + 'px';
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                }, 800);
+            }
+        }
+
+        function closeReviewModal() {
+            const reviewModal = document.getElementById('reviewModal');
+            if (reviewModal) {
+                reviewModal.classList.remove('active');
+                document.body.style.overflow = '';
+                
+                // 重置表单
+                document.getElementById('reviewName').value = '';
+                document.getElementById('reviewContent').value = '';
+                currentRating = 5;
+                updateRatingDisplay(5);
+            }
+        }
+
+        async function submitReview() {
+            const nameInput = document.getElementById('reviewName');
+            const contentInput = document.getElementById('reviewContent');
+            const submitBtn = document.getElementById('reviewSubmitBtn');
+            
+            const name = nameInput.value.trim() || '匿名用户';
+            const content = contentInput.value.trim();
+            
+            if (!content) {
+                alert('请输入评价内容');
+                return;
+            }
+            
+            // 禁用提交按钮
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提交中...';
+            
+            try {
+                // 获取 Supabase 客户端（用于获取用户信息）
+                const sb = getSupabaseClient();
+                
+                // 检查登录状态
+                let userName = name || '匿名用户';
+                let userId = 'anonymous';
+                let userAvatarUrl = null;
+                
+                if (sb) {
+                    try {
+                        const { data: { session } } = await sb.auth.getSession();
+                        if (session && session.user) {
+                            userId = session.user.id;
+                            userName = name || session.user.email?.split('@')[0] || '用户';
+                            
+                            // 获取用户头像
+                            try {
+                                const { data: profile } = await sb
+                                    .from('user_profiles')
+                                    .select('avatar_url')
+                                    .eq('id', userId)
+                                    .single();
+                                if (profile && profile.avatar_url) {
+                                    userAvatarUrl = profile.avatar_url;
+                                }
+                            } catch (e) {
+                                console.warn('获取用户头像失败:', e);
+                            }
+                        }
+                    } catch (authError) {
+                        console.warn('获取登录状态失败:', authError);
+                    }
+                }
+                
+                // 准备插入数据
+                const insertData = {
+                    name: userName,
+                    userId: userId === 'anonymous' ? 'anonymous' : userId,
+                    rating: currentRating || 5,
+                    content: content.trim(),
+                    userAvatarUrl: userAvatarUrl || null
+                };
+                
+                // 使用API接口插入数据，绕过RLS策略
+                const apiResponse = await fetch('/api/reviews', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(insertData)
+                });
+
+                if (!apiResponse.ok) {
+                    const errorData = await apiResponse.json().catch(() => ({}));
+                    const errorMessage = errorData.message || errorData.error || '提交失败，请稍后重试';
+                    throw new Error(errorMessage);
+                }
+
+                const result = await apiResponse.json();
+                
+                // 发送 NTFY 通知
+                if (typeof window.sendNtfyNotification === 'function') {
+                    try {
+                        const notificationMessage = `新评价：${userName} 给了 ${currentRating} 星评价\n${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`;
+                        await window.sendNtfyNotification(
+                            'New Review',
+                            notificationMessage,
+                            'default',
+                            'star'
+                        );
+                    } catch (ntfyError) {
+                        console.warn('NTFY 通知发送失败:', ntfyError);
+                    }
+                }
+                
+                // 显示成功消息
+                alert('评价提交成功！审核通过后将显示在页面上。');
+                
+                // 关闭模态框并重置表单
+                closeReviewModal();
+                
+                // 重新加载评价列表
+                if (typeof initReviews === 'function') {
+                    await initReviews();
+                }
+                
+            } catch (error) {
+                console.error('提交评价失败:', error);
+                alert('提交失败：' + (error.message || '未知错误'));
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '提交评价';
+            }
+        }
+    </script>
     <script type="text/babel" src="PortfolioSection.jsx" data-presets="env,react"></script>
     <script type="text/babel" src="TestimonialSection.jsx" data-presets="env,react"></script>
     <script type="text/babel">
-      function mountWhenReady(getComp, rootId, retries = 120) {
-        const el = document.getElementById(rootId);
-        if (!el) {
-          console.warn(`挂载点 #${rootId} 未找到`);
-          if (retries > 0) {
-            setTimeout(() => mountWhenReady(getComp, rootId, retries - 1), 50);
-          }
-          return;
+        function mountWhenReady(getComp, rootId, retries = 120) {
+            const el = document.getElementById(rootId);
+            if (!el) {
+                if (retries > 0) {
+                    setTimeout(() => mountWhenReady(getComp, rootId, retries - 1), 50);
+                }
+                return;
+            }
+            const Comp = getComp();
+            if (typeof Comp === 'function') {
+                try {
+                    const root = ReactDOM.createRoot(el);
+                    root.render(React.createElement(Comp));
+                    el.style.display = 'block';
+                    el.style.visibility = 'visible';
+                    el.style.opacity = '1';
+                } catch (error) {
+                    console.error(`挂载组件 ${rootId} 时出错:`, error);
+                }
+            } else if (retries > 0) {
+                setTimeout(() => mountWhenReady(getComp, rootId, retries - 1), 50);
+            }
         }
-        const Comp = getComp();
-        if (typeof Comp === 'function') {
-          console.log(`正在挂载组件到 #${rootId}`);
-          try {
-            const root = ReactDOM.createRoot(el);
-            root.render(React.createElement(Comp));
-            console.log(`组件已成功挂载到 #${rootId}`);
+        
+        // 作品展示和评价展示现在使用原生 JavaScript 实现
+        
+        // 模态框控制
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 初始化作品展示
+            async function initPortfolio() {
+                const grid = document.getElementById('portfolioGrid');
+                if (!grid) {
+                    console.warn('作品容器 portfolioGrid 未找到');
+                    return;
+                }
+
+                // 清空容器
+                grid.innerHTML = '';
+
+                try {
+                    // 尝试从 Supabase 获取数据
+                    let sb = getSupabaseClient();
+                    
+                    // 如果客户端未初始化，尝试直接创建
+                    if (!sb && window.supabase) {
+                        const url = window.SUPABASE_URL || 'https://afrasbvtsucsmddcdusi.supabase.co';
+                        const key = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmcmFzYnZ0c3Vjc21kZGNkdXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3OTkzMDgsImV4cCI6MjA3ODM3NTMwOH0.CBeNwfTUNs1gPwhgiDDvP1N1B1_Lzya8fnYJzDSwbdM';
+                        sb = window.supabase.createClient(url, key);
+                        window.SUPABASE_URL = url;
+                        window.SUPABASE_ANON_KEY = key;
+                    }
+                    
+                    let projects = [];
+                    
+                    if (sb) {
+                        console.log('开始从数据库加载作品数据...');
+                        const { data, error } = await sb
+                            .from('works')
+                            .select('*')
+                            .eq('is_deleted', false)
+                            .eq('is_hidden', false)  // 显示未隐藏的作品
+                            .order('pinned_at', { ascending: false, nullsFirst: false })
+                            .order('created_at', { ascending: false })
+                            .limit(4);
+                        
+                        if (error) {
+                            console.error('加载作品数据出错:', error);
+                            console.error('错误详情:', JSON.stringify(error, null, 2));
+                        } else if (data && data.length > 0) {
+                            console.log('从数据库加载到作品:', data.length, '个');
+                            projects = data.map(work => {
+                                // 处理图片数组：可能是 image_urls 字段（数组）或 image_url（字符串）
+                                let images = [];
+                                if (work.image_urls && Array.isArray(work.image_urls) && work.image_urls.length > 0) {
+                                    images = work.image_urls;
+                                } else if (work.image_url) {
+                                    images = [work.image_url];
+                                }
+                                
+                                return {
+                                    id: work.id,
+                                    title: work.title || '未命名项目',
+                                    category: work.category || '设计项目',
+                                    location: work.location || '',
+                                    area: work.area ? `${work.area} m²` : '',
+                                    cost: work.cost || '',
+                                    desc: work.description || '',
+                                    images: images
+                                };
+                            });
+                        } else {
+                            console.log('数据库中没有找到已发布的作品 (is_deleted=false, is_hidden=false)');
+                        }
+                    } else {
+                        console.warn('Supabase 客户端未初始化，无法加载作品数据');
+                    }
+                    
+                    // 如果没有数据，使用示例数据
+                    if (projects.length === 0) {
+                        console.log('使用示例作品数据');
+                        projects = [
+                            {
+                                id: 1, title: "静谧·私宅", category: "住宅设计", location: "上海", area: "240 m²", cost: "¥ 850,000",
+                                desc: "在这个项目中，我们试图寻找喧嚣都市中的宁静锚点。通过大面积的留白与天然木质的结合，营造出一种能够让时间慢下来的居住氛围。",
+                                images: ["https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=800"]
+                            },
+                            {
+                                id: 2, title: "光之艺廊", category: "商业空间", location: "北京", area: "180 m²", cost: "¥ 620,000",
+                                desc: "光线是这个空间的唯一主角。我们利用百叶窗和漫反射材料，让光线在一天中随着太阳的角度变化而流动。",
+                                images: ["https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800"]
+                            },
+                            {
+                                id: 3, title: "黑曜石公寓", category: "大平层", location: "深圳", area: "120 m²", cost: "¥ 550,000",
+                                desc: "专为单身精英打造的暗调空间。使用黑色岩板、皮革与深色胡桃木，展现出克制而深邃的男性气质。",
+                                images: ["https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?q=80&w=800"]
+                            },
+                            {
+                                id: 4, title: "山涧别墅", category: "别墅设计", location: "杭州", area: "600 m²", cost: "¥ 2,800,000",
+                                desc: "建筑生长于自然之中。我们将窗户开得极大，旨在模糊室内外的界限，让山林的风与景色成为家里最昂贵的装饰。",
+                                images: ["https://images.unsplash.com/photo-1507089947368-19c1da9775ae?q=80&w=800"]
+                            }
+                        ];
+                    }
+
+                    // 渲染作品卡片
+                    projects.forEach((p, idx) => {
+                        const spanClass = (idx === 0 || idx === 3) ? 'span-8' : 'span-4';
+                        const card = document.createElement('div');
+                        card.className = `project-card ${spanClass}`;
+                        card.onclick = () => openPfModal(p);
+                        const firstImage = p.images && p.images.length > 0 ? p.images[0] : 'https://via.placeholder.com/800';
+                        card.innerHTML = `
+                            <img src="${firstImage}" alt="${p.title}" loading="lazy">
+                            <div class="project-info">
+                                <span class="text-orange-500 text-xs font-['Syncopate'] mb-1 block">NO. 0${idx+1}</span>
+                                <h3 class="text-2xl font-semibold text-white">${p.title}</h3>
+                                <p class="text-white/60 text-sm mt-1">${p.location} / ${p.area}</p>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                    
+                    console.log('作品展示渲染完成，共', projects.length, '个');
+                } catch (error) {
+                    console.error('加载作品数据失败:', error);
+                    // 显示错误提示
+                    grid.innerHTML = '<div class="text-center text-neutral-500 py-8 col-span-full">作品加载失败，请刷新页面重试</div>';
+                }
+            }
+
+            // 初始化评价展示
+            async function initReviews() {
+                const reviewGrid = document.getElementById('reviewGrid');
+                if (!reviewGrid) {
+                    console.warn('评价容器 reviewGrid 未找到');
+                    return;
+                }
+
+                // 清空容器
+                reviewGrid.innerHTML = '';
+
+                try {
+                    let sb = getSupabaseClient();
+                    
+                    // 如果客户端未初始化，尝试直接创建
+                    if (!sb && window.supabase) {
+                        const url = window.SUPABASE_URL || 'https://afrasbvtsucsmddcdusi.supabase.co';
+                        const key = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmcmFzYnZ0c3Vjc21kZGNkdXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3OTkzMDgsImV4cCI6MjA3ODM3NTMwOH0.CBeNwfTUNs1gPwhgiDDvP1N1B1_Lzya8fnYJzDSwbdM';
+                        sb = window.supabase.createClient(url, key);
+                        window.SUPABASE_URL = url;
+                        window.SUPABASE_ANON_KEY = key;
+                    }
+                    
+                    let reviews = [];
+                    
+                    if (sb) {
+                        console.log('开始从数据库加载评价数据...');
+                        const { data, error } = await sb
+                            .from('reviews')
+                            .select('*')
+                            .eq('is_deleted', false)
+                            .eq('is_hidden', false)  // 只显示已审核通过的评价
+                            .order('pinned_at', { ascending: false, nullsFirst: false })
+                            .order('created_at', { ascending: false })
+                            .limit(3);
+                        
+                        if (error) {
+                            console.error('加载评价数据出错:', error);
+                            console.error('错误详情:', JSON.stringify(error, null, 2));
+                        } else if (data && data.length > 0) {
+                            console.log('从数据库加载到评价:', data.length, '个');
+                            reviews = await Promise.all(data.map(async (review) => {
+                                // 获取用户头像
+                                let avatarUrl = review.user_avatar_url || review.image_url || null;
+                                if (!avatarUrl && review.user_id && review.user_id !== 'anonymous') {
+                                    try {
+                                        const { data: profile } = await sb
+                                            .from('user_profiles')
+                                            .select('avatar_url')
+                                            .eq('id', review.user_id)
+                                            .single();
+                                        if (profile && profile.avatar_url) {
+                                            avatarUrl = profile.avatar_url;
+                                        }
+                                    } catch (e) {
+                                        // 静默失败
+                                    }
+                                }
+                                
+                                return {
+                                    id: review.id,
+                                    name: review.name || '匿名用户',
+                                    content: review.content || '',
+                                    rating: review.rating || 5,
+                                    project_name: review.project_name || '',
+                                    avatar_url: avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'
+                                };
+                            }));
+                        } else {
+                            console.log('数据库中没有找到已审核通过的评价 (is_deleted=false, is_hidden=false)');
+                        }
+                    } else {
+                        console.warn('Supabase 客户端未初始化，无法加载评价数据');
+                    }
+                    
+                    // 如果没有数据，使用示例数据
+                    if (reviews.length === 0) {
+                        console.log('使用示例评价数据');
+                        reviews = [
+                            {
+                                name: 'Lin. Z',
+                                content: '"从图纸到实景，几乎是 1:1 的呈现。团队非常专业，材质选型很有品位。"',
+                                rating: 5,
+                                project_name: 'NEO-TOKYO PENTHOUSE',
+                                avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'
+                            },
+                            {
+                                name: 'Sarah W.',
+                                content: '"既有理性美感，又有家的温度。完全没有市面上那种拼凑感。"',
+                                rating: 5,
+                                project_name: 'ART APARTMENT',
+                                avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80'
+                            },
+                            {
+                                name: 'Wang M.',
+                                content: '"设计非常用心，每一个细节都考虑到了。强烈推荐！"',
+                                rating: 5,
+                                project_name: 'MODERN LOFT',
+                                avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80'
+                            }
+                        ];
+                    }
+
+                    // 渲染评价卡片
+                    reviews.forEach(review => {
+                        const card = document.createElement('div');
+                        card.className = 'review-card';
+                        card.setAttribute('onmousemove', 'handleTilt(event, this)');
+                        card.setAttribute('onmouseleave', 'resetTilt(this)');
+                        
+                        const stars = '★'.repeat(review.rating || 5);
+                        card.innerHTML = `
+                            <div class="review-content">
+                                <div class="flex gap-1 mb-6 text-sm">
+                                    ${stars.split('').map(() => '<span class="star-icon">★</span>').join('')}
+                                </div>
+                                <p class="text-neutral-300 italic mb-8">${review.content}</p>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 bg-neutral-700 rounded-full overflow-hidden">
+                                        <img src="${review.avatar_url}" alt="${review.name}" class="w-full h-full object-cover" loading="lazy">
+                                    </div>
+                                    <div>
+                                        <h4 class="text-white font-medium">${review.name}</h4>
+                                        <p class="text-xs text-neutral-500 font-['Syncopate']">${review.project_name || ''}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        reviewGrid.appendChild(card);
+                    });
+                    
+                    console.log('评价展示渲染完成，共', reviews.length, '条');
+                } catch (error) {
+                    console.error('加载评价数据失败:', error);
+                    // 显示错误提示
+                    reviewGrid.innerHTML = '<div class="text-center text-neutral-500 py-8">评价加载失败，请刷新页面重试</div>';
+                }
+            }
+
+            // 初始化作品和评价
+            await initPortfolio();
+            await initReviews();
+
+            const contactBtn = document.getElementById('contact-btn');
             
-            // 如果是作品板块，直接显示 React 组件
-            if (rootId === 'portfolio-root') {
-              // 立即显示，让 React 组件自己处理加载状态
-              el.style.display = 'block';
-              el.style.visibility = 'visible';
-              el.style.opacity = '1';
-              el.style.minHeight = '600px';
-              // 确保父容器也可见
-              const parentSection = el.closest('#works');
-              if (parentSection) {
-                parentSection.style.display = 'block';
-                parentSection.style.visibility = 'visible';
-              }
+            if (contactBtn) {
+                contactBtn.addEventListener('click', () => {
+                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                });
+            }
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    if (href === '#' || href === '#!') return;
+                    const targetId = href.substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        e.preventDefault();
+                        if (window.smoothScrollTo) {
+                            window.smoothScrollTo(targetId, 80);
+                        } else {
+                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                });
+            });
+
+            // 滚动动画效果
+            const observerOptions = {
+                root: null,
+                rootMargin: '-10% 0px -10% 0px',
+                threshold: 0.1
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+            
+            // 为所有section添加观察（除了home）
+            const sections = document.querySelectorAll('section.section-fade-in');
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+            
+            // 作品详情模态框控制
+            const workDetailModal = document.getElementById('work-detail-modal');
+            const closeWorkDetail = document.getElementById('close-work-detail');
+            if (closeWorkDetail && workDetailModal) {
+                closeWorkDetail.addEventListener('click', () => {
+                    workDetailModal.classList.add('hidden');
+                    workDetailModal.classList.remove('flex');
+                });
+                // 点击背景关闭
+                workDetailModal.addEventListener('click', (e) => {
+                    if (e.target === workDetailModal) {
+                        workDetailModal.classList.add('hidden');
+                        workDetailModal.classList.remove('flex');
+                    }
+                });
+            }
+            
+            // 微信二维码显示/隐藏
+            const wechatBtn = document.getElementById('wechat-btn');
+            const wechatQrcode = document.getElementById('wechat-qrcode');
+            if (wechatBtn && wechatQrcode) {
+                wechatBtn.addEventListener('mouseenter', () => {
+                    wechatQrcode.classList.remove('hidden');
+                });
+                wechatBtn.addEventListener('mouseleave', () => {
+                    wechatQrcode.classList.add('hidden');
+                });
+            }
+            
+            // 刮奖效果初始化 - 完全按照 jiancha.html 的实现
+            function initScratchEffect() {
+                const container = document.getElementById('scratch-image-container');
+                const coverCanvas = document.getElementById('scratch-canvas');
+                const fxCanvas = document.getElementById('scratch-fx-canvas');
+                const interactionLayer = document.getElementById('scratch-interaction-layer');
+                
+                if (!container || !coverCanvas || !fxCanvas || !interactionLayer) {
+                    console.warn('Scratch Effect: Container or Canvas not found.');
+                    return;
+                }
+                
+                // --- 核心配置区 ---
+                const config = {
+                    // 1. 主题色设置
+                    themeColor: '#FF6600',  // 橙色 HEX 值
+                    
+                    // 2. 刮开设置
+                    scratchRadius: 40,      // 刮开的笔触大小
+                    
+                    // 3. 粒子设置
+                    particleAmount: 6,      // 每次移动产生的粒子数量
+                    particleSizeMin: 2,     // 最小尺寸 (像素)
+                    particleSizeMax: 4,     // 最大尺寸 (像素)
+                    particleSpeed: 4,       // 飞溅速度
+                    fadeSpeed: 0.03         // 消失速度
+                };
+                
+                // 图片资源
+                const coverSrc = 'https://dl.img.timecdn.cn/2025/12/07/weizhuangxiu.jpg';
+                
+                const ctxCover = coverCanvas.getContext('2d');
+                const ctxFx = fxCanvas.getContext('2d');
+                
+                let width, height;
+                let particles = [];
+                let coverImg = new Image();
+                
+                // --- 初始化 ---
+                function init() {
+                    width = container.offsetWidth;
+                    height = container.offsetHeight;
+                    
+                    // 设置两个 Canvas 尺寸
+                    coverCanvas.width = width;
+                    coverCanvas.height = height;
+                    fxCanvas.width = width;
+                    fxCanvas.height = height;
+                    
+                    coverImg.crossOrigin = "Anonymous";
+                    coverImg.src = coverSrc;
+                    
+                    coverImg.onload = () => {
+                        drawCoverImage();
+                        animateFx(); 
+                    };
+                }
+                
+                // --- 绘制静态覆盖层 ---
+                function drawCoverImage() {
+                    // 模拟 object-fit: cover
+                    const imgRatio = coverImg.width / coverImg.height;
+                    const canvasRatio = width / height;
+                    let dw, dh, dx, dy;
+                    
+                    if (imgRatio > canvasRatio) {
+                        dh = height; dw = height * imgRatio;
+                        dx = (width - dw) / 2; dy = 0;
+                    } else {
+                        dw = width; dh = width / imgRatio;
+                        dx = 0; dy = (height - dh) / 2;
+                    }
+                    
+                    ctxCover.globalCompositeOperation = 'source-over';
+                    ctxCover.drawImage(coverImg, dx, dy, dw, dh);
+                }
+                
+                // --- 橙色粒子类 ---
+                class Particle {
+                    constructor(x, y) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = Math.random() * (config.particleSizeMax - config.particleSizeMin) + config.particleSizeMin;
+                        const angle = Math.random() * Math.PI * 2;
+                        const speed = Math.random() * config.particleSpeed;
+                        this.vx = Math.cos(angle) * speed;
+                        this.vy = Math.sin(angle) * speed;
+                        this.alpha = 1; 
+                        this.rotation = Math.random() * Math.PI;
+                        this.rotateSpeed = (Math.random() - 0.5) * 0.2;
+                    }
+                    
+                    update() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        this.vy += 0.15; // 重力感
+                        this.alpha -= config.fadeSpeed;
+                        this.rotation += this.rotateSpeed;
+                    }
+                    
+                    draw() {
+                        if (this.alpha <= 0) return;
+                        ctxFx.save();
+                        ctxFx.globalAlpha = this.alpha;
+                        ctxFx.fillStyle = config.themeColor;
+                        ctxFx.translate(this.x, this.y);
+                        ctxFx.rotate(this.rotation);
+                        ctxFx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                        ctxFx.restore();
+                    }
+                }
+                
+                // --- 动画循环 ---
+                function animateFx() {
+                    ctxFx.clearRect(0, 0, width, height);
+                    for (let i = particles.length - 1; i >= 0; i--) {
+                        const p = particles[i];
+                        p.update();
+                        p.draw();
+                        if (p.alpha <= 0) {
+                            particles.splice(i, 1);
+                        }
+                    }
+                    requestAnimationFrame(animateFx);
+                }
+                
+                // --- 交互处理 ---
+                let isScratching = false;
+                
+                const handleInput = (e) => {
+                    if (!isScratching) return; // 只有在按下时才响应
+                    
+                    const rect = container.getBoundingClientRect();
+                    let clientX, clientY;
+                    if (e.touches) {
+                        clientX = e.touches[0].clientX;
+                        clientY = e.touches[0].clientY;
+                    } else {
+                        clientX = e.clientX;
+                        clientY = e.clientY;
+                    }
+                    const x = clientX - rect.left;
+                    const y = clientY - rect.top;
+                    
+                    // 1. 永久擦除
+                    ctxCover.globalCompositeOperation = 'destination-out';
+                    ctxCover.beginPath();
+                    const gradient = ctxCover.createRadialGradient(x, y, 0, x, y, config.scratchRadius);
+                    gradient.addColorStop(0, 'rgba(0,0,0,1)');
+                    gradient.addColorStop(0.5, 'rgba(0,0,0,0.5)'); 
+                    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctxCover.fillStyle = gradient;
+                    ctxCover.arc(x, y, config.scratchRadius, 0, Math.PI * 2);
+                    ctxCover.fill();
+                    
+                    // 2. 生成橙色粒子
+                    for (let i = 0; i < config.particleAmount; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const r = Math.random() * config.scratchRadius * 0.8; 
+                        const offsetX = Math.cos(angle) * r;
+                        const offsetY = Math.sin(angle) * r;
+                        particles.push(new Particle(x + offsetX, y + offsetY));
+                    }
+                };
+                
+                // 鼠标按下时开始刮
+                interactionLayer.addEventListener('mousedown', (e) => {
+                    isScratching = true;
+                    handleInput(e);
+                });
+                
+                // 鼠标移动时继续刮
+                interactionLayer.addEventListener('mousemove', handleInput);
+                
+                // 鼠标释放时停止
+                interactionLayer.addEventListener('mouseup', () => {
+                    isScratching = false;
+                });
+                
+                // 鼠标离开时停止
+                interactionLayer.addEventListener('mouseleave', () => {
+                    isScratching = false;
+                });
+                
+                // 触摸事件
+                interactionLayer.addEventListener('touchstart', (e) => {
+                    isScratching = true;
+                    e.preventDefault();
+                    handleInput(e);
+                }, { passive: false });
+                
+                interactionLayer.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    handleInput(e); 
+                }, { passive: false });
+                
+                interactionLayer.addEventListener('touchend', () => {
+                    isScratching = false;
+                });
+                
+                window.addEventListener('resize', () => {
+                    setTimeout(init, 200);
+                });
+                
+                init();
+            }
+            
+            // 延迟初始化，确保DOM和图片加载完成
+            setTimeout(() => {
+                initScratchEffect();
+            }, 800);
+            
+            // 限制页面滚动，当页脚完全显示后不能再向下滚动
+            function limitScroll() {
+                const footer = document.querySelector('footer');
+                if (!footer) return;
+                
+                const checkScroll = () => {
+                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                    
+                    // 如果滚动超过了最大位置，强制回到最大位置
+                    if (currentScrollTop > maxScroll) {
+                        window.scrollTo({
+                            top: maxScroll,
+                            behavior: 'auto'
+                        });
+                    }
+                };
+                
+                // 监听滚动事件
+                window.addEventListener('scroll', checkScroll, { passive: true });
+                
+                // 监听滚轮事件，在页脚完全显示后阻止继续向下滚动
+                window.addEventListener('wheel', (e) => {
+                    const footer = document.querySelector('footer');
+                    if (!footer) return;
+                    
+                    const footerRect = footer.getBoundingClientRect();
+                    const windowHeight = window.innerHeight;
+                    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const maxScroll = document.documentElement.scrollHeight - windowHeight;
+                    
+                    // 如果页脚底部已经到达或超过视口底部，且还在向下滚动
+                    if (footerRect.bottom >= windowHeight && e.deltaY > 0 && currentScrollTop >= maxScroll - 1) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                }, { passive: false });
+                
+                // 使用 ResizeObserver 监听 body 高度变化
+                if (typeof ResizeObserver !== 'undefined') {
+                    const resizeObserver = new ResizeObserver(() => {
+                        setTimeout(checkScroll, 100);
+                    });
+                    resizeObserver.observe(document.body);
+                }
+                
+                // 初始检查
+                checkScroll();
+            }
+            
+            // 延迟执行，确保页脚已加载
+            setTimeout(limitScroll, 500);
+            
+            // 数字计数器动画 - 直接执行，不使用滚动触发
+            function initCounterAnimation() {
+                // 1. 获取所有带有 'counter-number' 类的元素
+                const counters = document.querySelectorAll('.counter-number');
+                
+                // 调试检查
+                if (counters.length === 0) {
+                    console.warn("⚠️ 警告：未找到 .counter-number 元素，请检查 HTML 类名是否正确");
+                    return;
+                }
+
+                // 2. 直接执行动画，不使用IntersectionObserver
+                counters.forEach(counter => {
+                    // 先初始化为 0
+                    counter.innerText = '0';
+                    
+                    // 获取目标值
+                    const target = +counter.getAttribute('data-target');
+                    
+                    // 计算每次增加的步长
+                    // target / 50 意味着无论数字多大，都在大约 50 帧内完成
+                    const increment = target / 50;
+                    
+                    let currentCount = 0;
+                    
+                    const updateCounter = () => {
+                        currentCount += increment;
+                        
+                        if (currentCount < target) {
+                            // 如果还没到目标值，继续加
+                            // Math.ceil 向上取整，保证数字是整数
+                            counter.innerText = Math.ceil(currentCount);
+                            
+                            // 每 20 毫秒执行一次 updateCounter
+                            setTimeout(updateCounter, 20);
+                        } else {
+                            // 确保最后显示的数字精准等于目标值
+                            counter.innerText = target;
+                        }
+                    };
+                    
+                    // 启动动画
+                    updateCounter();
+                });
+            }
+            
+            // 初始化计数器动画（在DOMContentLoaded时执行）
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initCounterAnimation);
             } else {
-              // 其他组件直接显示
-              el.style.display = 'block';
-              el.style.visibility = 'visible';
-              el.style.opacity = '1';
+                // DOM已经加载完成，直接执行
+                initCounterAnimation();
             }
-          } catch (error) {
-            console.error(`挂载组件 ${rootId} 时出错:`, error);
-            // 如果挂载失败，保持显示但让组件自己处理错误状态
-            if (rootId === 'portfolio-root') {
-              el.style.display = 'block';
-            }
-          }
-        } else if (retries > 0) {
-          console.log(`等待组件 ${rootId} 加载... (剩余重试: ${retries})`);
-          setTimeout(() => mountWhenReady(getComp, rootId, retries - 1), 50);
-        } else {
-          console.error(`组件 ${rootId} 加载失败: window.${rootId === 'portfolio-root' ? 'PortfolioSection' : 'TestimonialSection'} 不是函数`);
-          // 如果组件加载失败，保持显示但让组件自己处理错误状态
-          if (rootId === 'portfolio-root') {
-            el.style.display = 'block';
-          }
-        }
-      }
-      // 作品与评价挂载，避免 Babel 异步导致的竞态
-      console.log('开始挂载 React 组件...');
-      mountWhenReady(() => window.PortfolioSection, 'portfolio-root');
-      mountWhenReady(() => window.TestimonialSection, 'testimonial-root');
-      
-      // 确保精选作品板块始终显示（多次检查，防止被其他脚本覆盖）
-      const ensurePortfolioVisible = () => {
-        const portfolioRoot = document.getElementById('portfolio-root');
-        const worksSection = document.getElementById('works');
-        if (portfolioRoot) {
-          portfolioRoot.style.display = 'block';
-          portfolioRoot.style.visibility = 'visible';
-          portfolioRoot.style.opacity = '1';
-          portfolioRoot.style.minHeight = '600px';
-          portfolioRoot.style.position = 'relative';
-          portfolioRoot.style.zIndex = '10';
-        }
-        if (worksSection) {
-          worksSection.style.display = 'block';
-          worksSection.style.visibility = 'visible';
-          worksSection.style.position = 'relative';
-          worksSection.style.zIndex = '10';
-        }
-      };
-      
-      // 立即执行一次
-      ensurePortfolioVisible();
-      
-      // 延迟执行，确保 React 组件挂载后仍然可见
-      setTimeout(ensurePortfolioVisible, 500);
-      setTimeout(ensurePortfolioVisible, 1000);
-      setTimeout(ensurePortfolioVisible, 2000);
-      
-      // 监听 DOM 变化，确保不会被其他脚本隐藏
-      const observer = new MutationObserver(() => {
-        ensurePortfolioVisible();
-      });
-      
-      setTimeout(() => {
-        const portfolioRoot = document.getElementById('portfolio-root');
-        const worksSection = document.getElementById('works');
-        if (portfolioRoot) {
-          observer.observe(portfolioRoot, { attributes: true, attributeFilter: ['style', 'class'] });
-        }
-        if (worksSection) {
-          observer.observe(worksSection, { attributes: true, attributeFilter: ['style', 'class'] });
-        }
-      }, 1000);
-      
-      const navReviews = document.querySelector('a[href="#testimonials"]');
-      if (navReviews) {
-        navReviews.addEventListener('click', (e) => {
-          e.preventDefault();
-          try { if (window.smoothScrollTo) window.smoothScrollTo('testimonials'); else location.hash = '#testimonials'; } catch(_) { location.hash = '#testimonials'; }
         });
-      }
     </script>
-  </body>
-</html>
+
+</body></html>

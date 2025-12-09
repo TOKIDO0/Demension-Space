@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>橙色微粒刮刮乐</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #container {
+            position: relative;
+            width: 800px;
+            aspect-ratio: 4/3;
+            max-width: 95vw;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(255, 102, 0, 0.2); /* 加了一点橙色阴影呼应主题 */
+            user-select: none;
+        }
+
+        /* 1. 结果图 (最底层) */
+        .bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        /* 2. 覆盖层 Canvas (中间层，负责挡住结果图，被刮开) */
+        #coverCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        /* 3. 特效层 Canvas (最顶层，只负责画飞溅的橙色粒子) */
+        #fxCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none; /* 让鼠标事件穿透 */
+        }
+        
+        /* 交互层 */
+        #interactionLayer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 4;
+            cursor: crosshair;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #888;
+            z-index: 0;
+            font-family: sans-serif;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <div class="loading">正在准备...</div>
+
+    <img src="https://dl.img.timecdn.cn/2025/12/07/zhuangxiu.jpg" class="bg-image" alt="Result">
+    
+    <canvas id="coverCanvas"></canvas>
+    
+    <canvas id="fxCanvas"></canvas>
+    
+    <div id="interactionLayer"></div>
+</div>
+
+<script>
+    // --- 核心配置区 ---
+    const config = {
+        // 1. 主题色设置
+        themeColor: '#FF6600',  // 在这里修改你的橙色 HEX 值
+        
+        // 2. 刮开设置
+        scratchRadius: 40,      // 刮开的笔触大小
+        
+        // 3. 粒子设置 (已调小)
+        particleAmount: 6,      // 每次移动产生的粒子数量 (稍微多一点，因为粒子变小了)
+        particleSizeMin: 2,     // 最小尺寸 (像素)
+        particleSizeMax: 4,     // 最大尺寸 (像素)
+        particleSpeed: 4,       // 飞溅速度
+        fadeSpeed: 0.03         // 消失速度 (数值越大消失越快)
+    };
+
+    // 图片资源
+    const coverSrc = 'https://dl.img.timecdn.cn/2025/12/07/weizhuangxiu.jpg';
+
+    // DOM 元素
+    const container = document.getElementById('container');
+    const coverCanvas = document.getElementById('coverCanvas');
+    const fxCanvas = document.getElementById('fxCanvas');
+    const interactionLayer = document.getElementById('interactionLayer');
+    
+    const ctxCover = coverCanvas.getContext('2d');
+    const ctxFx = fxCanvas.getContext('2d');
+
+    let width, height;
+    let particles = [];
+    let coverImg = new Image();
+    
+    // --- 初始化 ---
+    function init() {
+        width = container.offsetWidth;
+        height = container.offsetHeight;
+
+        // 设置两个 Canvas 尺寸
+        coverCanvas.width = width;
+        coverCanvas.height = height;
+        fxCanvas.width = width;
+        fxCanvas.height = height;
+
+        coverImg.crossOrigin = "Anonymous";
+        coverImg.src = coverSrc;
+        
+        coverImg.onload = () => {
+            drawCoverImage();
+            animateFx(); 
+        };
+    }
+
+    // --- 绘制静态覆盖层 ---
+    function drawCoverImage() {
+        // 模拟 object-fit: cover
+        const imgRatio = coverImg.width / coverImg.height;
+        const canvasRatio = width / height;
+        let dw, dh, dx, dy;
+
+        if (imgRatio > canvasRatio) {
+            dh = height; dw = height * imgRatio;
+            dx = (width - dw) / 2; dy = 0;
+        } else {
+            dw = width; dh = width / imgRatio;
+            dx = 0; dy = (height - dh) / 2;
+        }
+
+        ctxCover.globalCompositeOperation = 'source-over';
+        ctxCover.drawImage(coverImg, dx, dy, dw, dh);
+    }
+
+    // --- 橙色粒子类 ---
+    class Particle {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            
+            // 随机大小
+            this.size = Math.random() * (config.particleSizeMax - config.particleSizeMin) + config.particleSizeMin;
+            
+            // 随机飞溅方向
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * config.particleSpeed;
+            this.vx = Math.cos(angle) * speed;
+            this.vy = Math.sin(angle) * speed;
+            
+            this.alpha = 1; 
+            
+            // 随机加一点点旋转
+            this.rotation = Math.random() * Math.PI;
+            this.rotateSpeed = (Math.random() - 0.5) * 0.2;
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.vy += 0.15; // 重力感
+            this.alpha -= config.fadeSpeed;
+            this.rotation += this.rotateSpeed;
+        }
+
+        draw() {
+            if (this.alpha <= 0) return;
+            
+            ctxFx.save();
+            ctxFx.globalAlpha = this.alpha;
+            ctxFx.fillStyle = config.themeColor; // 使用主题橙色
+            
+            ctxFx.translate(this.x, this.y);
+            ctxFx.rotate(this.rotation);
+            
+            // 绘制小方块 (比 drawImage 性能更好)
+            ctxFx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+            
+            ctxFx.restore();
+        }
+    }
+
+    // --- 动画循环 ---
+    function animateFx() {
+        ctxFx.clearRect(0, 0, width, height);
+        
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.update();
+            p.draw();
+            
+            if (p.alpha <= 0) {
+                particles.splice(i, 1);
+            }
+        }
+        
+        requestAnimationFrame(animateFx);
+    }
+
+    // --- 交互处理 ---
+    const handleInput = (e) => {
+        // e.preventDefault(); // 注释掉这行，以免影响页面滚动，除非你是全屏应用
+        const rect = container.getBoundingClientRect();
+        
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        // 1. 永久擦除
+        ctxCover.globalCompositeOperation = 'destination-out';
+        ctxCover.beginPath();
+        const gradient = ctxCover.createRadialGradient(x, y, 0, x, y, config.scratchRadius);
+        gradient.addColorStop(0, 'rgba(0,0,0,1)');
+        gradient.addColorStop(0.5, 'rgba(0,0,0,0.5)'); 
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        
+        ctxCover.fillStyle = gradient;
+        ctxCover.arc(x, y, config.scratchRadius, 0, Math.PI * 2);
+        ctxCover.fill();
+
+        // 2. 生成橙色粒子
+        for (let i = 0; i < config.particleAmount; i++) {
+            // 在笔刷范围内随机位置生成
+            const angle = Math.random() * Math.PI * 2;
+            // 随机半径，让粒子不只是在边缘产生，而是在整个笔触内
+            const r = Math.random() * config.scratchRadius * 0.8; 
+            const offsetX = Math.cos(angle) * r;
+            const offsetY = Math.sin(angle) * r;
+            
+            particles.push(new Particle(x + offsetX, y + offsetY));
+        }
+    };
+
+    interactionLayer.addEventListener('mousemove', handleInput);
+    interactionLayer.addEventListener('touchmove', (e) => {
+         e.preventDefault(); // 移动端需要阻止滚动才能顺畅刮奖
+         handleInput(e); 
+    }, { passive: false });
+
+    window.addEventListener('resize', () => {
+        setTimeout(init, 200);
+    });
+
+    init();
+
+</script>
+</body>
+</html>

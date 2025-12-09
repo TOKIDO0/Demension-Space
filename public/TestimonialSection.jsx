@@ -31,7 +31,7 @@ const ToastNotification = ({ message, type = 'success', onClose }) => {
       <div className={`
         relative px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border
         ${type === 'success' 
-          ? 'bg-gradient-to-r from-purple-600/90 to-cyan-500/90 border-purple-400/50' 
+          ? 'bg-gradient-to-r from-orange-600/90 to-orange-500/90 border-orange-400/50' 
           : 'bg-gradient-to-r from-red-600/90 to-orange-500/90 border-red-400/50'
         }
         transform transition-all duration-500 ease-out
@@ -74,24 +74,49 @@ const ToastNotification = ({ message, type = 'success', onClose }) => {
 // -----------------------------------------------------------------------------
 const ProjectImageCarousel = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
   if (!images || images.length === 0) return null;
   
   const nextImage = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
     setCurrentIndex((prev) => (prev + 1) % images.length);
+      setTimeout(() => setIsTransitioning(false), 300);
+    }, 300);
   };
   
   const prevImage = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+      setTimeout(() => setIsTransitioning(false), 300);
+    }, 300);
   };
   
   return (
     <div className="mt-4 rounded-xl overflow-hidden border border-white/10 relative group">
-      <img 
-        src={images[currentIndex]} 
-        alt={`项目返图 ${currentIndex + 1}`} 
-        className="w-full max-h-64 object-cover"
+      <div className="relative w-full max-h-64" style={{ aspectRatio: '16/9', overflow: 'hidden' }}>
+        <div 
+          className="flex transition-transform duration-300 ease-in-out"
+          style={{
+            transform: `translateX(-${currentIndex * 100}%)`,
+            width: `${images.length * 100}%`,
+            height: '100%'
+          }}
+        >
+          {images.map((img, idx) => (
+            <div key={idx} style={{ width: `${100 / images.length}%`, flexShrink: 0, height: '100%' }}>
+              <img 
+                src={img} 
+                alt={`项目返图 ${idx + 1}`} 
+                className="w-full h-full object-cover"
       />
+            </div>
+          ))}
+        </div>
       {images.length > 1 && (
         <>
           <button
@@ -212,12 +237,12 @@ const TestimonialSection = () => {
           }
           
           return {
-            id: item.id,
+          id: item.id,
             name: item.name || item.user_id || 'Anonymous',
-            role: item.role || 'Client',
-            rating: item.rating || 5,
-            content: item.content || item.comment || '',
-            tag: item.tag || 'Review',
+          role: item.role || 'Client',
+          rating: item.rating || 5,
+          content: item.content || item.comment || '',
+          tag: item.tag || 'Review',
             // 用户头像（用于显示在头像位置）
             image_url: avatarUrl,
             // 项目返图数组（用于显示在评价内容中，支持轮播）
@@ -337,7 +362,7 @@ const TestimonialSection = () => {
       let userAvatarUrl = null;
       
       try {
-        const { data: { session } } = await sb.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
         if (session && session.user) {
           userName = session.user.email ? session.user.email.split('@')[0] : '用户';
           userEmail = session.user.email;
@@ -370,17 +395,17 @@ const TestimonialSection = () => {
           const uploadPromises = files.map(async (file, index) => {
             try {
               const path = `reviews/${Date.now()}_${index}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
-              const { data: uploadData, error: uploadError } = await sb.storage
+        const { data: uploadData, error: uploadError } = await sb.storage
                 .from('reviews')
-                .upload(path, file, { upsert: false });
-              
-              if (uploadError) {
+          .upload(path, file, { upsert: false });
+        
+        if (uploadError) {
                 console.error(`图片 ${index + 1} 上传失败:`, uploadError);
                 return null;
-              } else {
-                const { data: publicUrlData } = sb.storage.from('reviews').getPublicUrl(path);
+        } else {
+           const { data: publicUrlData } = sb.storage.from('reviews').getPublicUrl(path);
                 return publicUrlData.publicUrl;
-              }
+        }
             } catch (uploadErr) {
               console.error(`图片 ${index + 1} 上传异常:`, uploadErr);
               return null;
@@ -421,22 +446,22 @@ const TestimonialSection = () => {
         insertData.image_url = userAvatarUrl;
       }
 
-      // 插入数据
-      const { data: insertResult, error: insertError } = await sb.from('reviews').insert(insertData);
+      // 使用API接口插入数据，绕过RLS策略
+      const apiResponse = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(insertData)
+      });
 
-      if (insertError) {
-        console.error('插入评价数据失败:', insertError);
-        // 提供更详细的错误信息
-        if (insertError.code === '42501') {
-          throw new Error('权限不足，请联系管理员检查数据库权限设置');
-        } else if (insertError.code === '23505') {
-          throw new Error('您已经提交过评价了');
-        } else if (insertError.message) {
-          throw new Error(`提交失败: ${insertError.message}`);
-        } else {
-          throw insertError;
-        }
+      if (!apiResponse.ok) {
+        const errorData = await apiResponse.json().catch(() => ({}));
+        const errorMessage = errorData.message || errorData.error || '提交失败，请稍后重试';
+        throw new Error(errorMessage);
       }
+
+      const result = await apiResponse.json();
 
       // 成功后重置表单
       setShowModal(false);
@@ -510,22 +535,28 @@ const TestimonialSection = () => {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
       </div>
 
-      {/* 标题区 */}
-      <div className="relative z-20 text-center mb-16 px-4">
-        <div className="flex items-center justify-center gap-2 mb-4">
-            <Icon.Zap className="w-5 h-5 text-cyan-400 animate-pulse inline-block" />
-            <span className="text-cyan-400 font-mono tracking-[0.3em] text-xs uppercase">System Feedback</span>
+      {/* 标题区 - 右侧对齐 */}
+      <div className="relative z-20 w-full max-w-7xl mx-auto px-6 mb-16">
+        <div className="flex flex-col items-end md:items-end">
+          <div className="relative">
+            {/* 装饰角标 - 右上角 */}
+            <div className="absolute -right-6 -top-6 w-8 h-8 border-r border-t border-orange-500/20"></div>
+            
+            <div className="flex items-center justify-end gap-2 mb-4">
+              <span className="text-neutral-400 font-mono tracking-[0.3em] text-xs uppercase">CLIENT STORIES</span>
         </div>
-        <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter mb-4 drop-shadow-lg">
-          信号 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-cyan-500">回响</span>
+            <h2 className="text-4xl md:text-6xl font-light text-white tracking-wider mb-4 text-right" style={{ letterSpacing: '0.05em' }}>
+              生活印记
         </h2>
-        <div className="mt-6 flex items-center justify-center">
+            <div className="mt-6 flex items-center justify-end">
           <button
             onClick={() => setShowModal(true)}
-            className="px-6 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-cyan-500 text-white text-sm font-bold shadow-[0_0_20px_rgba(168,85,247,0.35)] hover:shadow-[0_0_35px_rgba(168,85,247,0.6)] transition-all border border-white/10 backdrop-blur-md hover:scale-105 active:scale-95"
+                className="px-6 py-2.5 rounded-full bg-transparent border border-white/30 text-white text-sm font-medium backdrop-blur-sm hover:border-orange-500 hover:text-orange-500 transition-all"
           >
-            <span className="mr-2">📡</span> 发送信号 (添加评价)
+                聆听更多声音
           </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -556,35 +587,47 @@ const TestimonialSection = () => {
             return (
               <div
                 key={item.id || index}
-                className="absolute w-[90%] md:w-[600px] bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-10 flex flex-col justify-between shadow-2xl group"
+                className="absolute w-[90%] md:w-[600px] rounded-3xl p-8 md:p-10 flex flex-col justify-between group"
                 style={{
                   ...style,
-                  boxShadow: isActive ? '0 25px 50px -12px rgba(147, 51, 234, 0.25)' : 'none'
+                  background: 'rgba(20, 20, 20, 0.6)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: isActive ? '0 0 20px rgba(255, 255, 255, 0.05)' : 'none'
                 }}
               >
-                <div className="absolute top-6 right-6 text-white/5 group-hover:text-purple-500/20 transition-colors duration-500">
+                {/* 边框外发光 - 微弱闪烁（白色，无紫色） */}
+                <div 
+                  className="absolute inset-0 rounded-3xl pointer-events-none"
+                  style={{
+                    boxShadow: isActive ? '0 0 15px rgba(255, 255, 255, 0.08)' : '0 0 8px rgba(255, 255, 255, 0.03)',
+                    animation: 'glow-pulse 3s ease-in-out infinite',
+                    opacity: isActive ? 1 : 0.5
+                }}
+                />
+                
+                <div className="absolute top-6 right-6 text-neutral-600 group-hover:text-orange-500/30 transition-colors duration-500">
                   <Icon.Quote className="text-6xl inline-block" />
                 </div>
                 
                 <div className="flex items-center gap-4 mb-6 relative z-10">
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center border-2 ${isActive ? 'border-purple-500 bg-purple-500/20' : 'border-white/10 bg-white/5'}`}>
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center border border-white/20 overflow-hidden">
                      {item.image_url ? (
                        <img src={item.image_url} alt="user" className="w-full h-full rounded-full object-cover" />
                      ) : (
-                       <Icon.User className={`w-6 h-6 ${isActive ? 'text-purple-400' : 'text-gray-400'} inline-block`} />
+                       <Icon.User className="w-6 h-6 text-neutral-500 inline-block" />
                      )}
                   </div>
                   <div>
-                    <h4 className="text-white font-bold text-lg tracking-wide">{item.name}</h4>
-                    <p className="text-xs text-cyan-400 font-mono uppercase tracking-wider flex items-center gap-1">
+                    <h4 className="text-white font-medium text-lg tracking-wide">{item.name}</h4>
+                    <p className="text-xs text-neutral-500 font-mono uppercase tracking-wider">
                       {item.role} 
-                      {isActive && <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-ping ml-2"/>}
                     </p>
                   </div>
                 </div>
 
                 <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar">
-                  <p className="text-gray-200 text-lg leading-relaxed font-light italic mb-4">
+                  <p className="text-gray-200 text-lg leading-relaxed font-light mb-4">
                     "{item.content}"
                   </p>
                   
@@ -596,24 +639,19 @@ const TestimonialSection = () => {
 
                 <div className="mt-6 pt-6 border-t border-white/10 flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
-                      <Icon.Fingerprint className="w-3 h-3 text-gray-400 inline-block" />
-                      <span className="text-xs text-gray-400 font-mono">{item.tag}</span>
+                      <Icon.Fingerprint className="w-3 h-3 text-neutral-500 inline-block" />
+                      <span className="text-xs text-neutral-500 font-mono">{item.tag}</span>
                   </div>
                   
                   <div className="flex gap-1">
                     {[...Array(5)].map((_, i) => (
                       <Icon.Star 
                         key={i} 
-                        className={`${i < (item.rating || 5) ? 'text-purple-500 drop-shadow-[0_0_5px_rgba(168,85,247,0.5)]' : 'text-gray-700'} inline-block text-sm`} 
+                        className={`${i < (item.rating || 5) ? 'text-[#ff4d00]' : 'text-neutral-700'} inline-block text-sm`} 
                       />
                     ))}
                   </div>
                 </div>
-                
-                {/* 边框光效 */}
-                {isActive && (
-                  <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-purple-500/30 pointer-events-none animate-pulse" />
-                )}
               </div>
             );
           })}
@@ -621,13 +659,13 @@ const TestimonialSection = () => {
           {/* 轮播按钮 */}
           <button 
             onClick={prevSlide}
-            className="absolute left-2 md:left-10 z-30 w-12 h-12 rounded-full bg-black/40 hover:bg-purple-600 border border-white/10 hover:border-purple-500 text-white transition-all flex items-center justify-center backdrop-blur-md group"
+            className="absolute left-2 md:left-10 z-30 w-12 h-12 rounded-full bg-black/40 hover:bg-orange-500/20 border border-white/10 hover:border-orange-500/50 text-white transition-all flex items-center justify-center backdrop-blur-md group"
           >
             <Icon.ChevronLeft className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform inline-block" />
           </button>
           <button 
             onClick={nextSlide}
-            className="absolute right-2 md:right-10 z-30 w-12 h-12 rounded-full bg-black/40 hover:bg-purple-600 border border-white/10 hover:border-purple-500 text-white transition-all flex items-center justify-center backdrop-blur-md group"
+            className="absolute right-2 md:right-10 z-30 w-12 h-12 rounded-full bg-black/40 hover:bg-orange-500/20 border border-white/10 hover:border-orange-500/50 text-white transition-all flex items-center justify-center backdrop-blur-md group"
           >
             <Icon.ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform inline-block" />
           </button>
@@ -642,7 +680,7 @@ const TestimonialSection = () => {
               key={idx}
               onClick={() => setActiveIndex(idx)}
               className={`h-1.5 rounded-full transition-all duration-500 ${
-                activeIndex === idx ? 'w-12 bg-gradient-to-r from-purple-500 to-cyan-500 shadow-[0_0_10px_#a855f7]' : 'w-2 bg-gray-700 hover:bg-gray-600'
+                activeIndex === idx ? 'w-12 bg-[#ff4d00]' : 'w-2 bg-neutral-700 hover:bg-neutral-600'
               }`}
             />
           ))}
@@ -662,9 +700,14 @@ const TestimonialSection = () => {
             e.stopPropagation();
           }}
         >
-          {/* 背景遮罩 */}
+          {/* 背景遮罩 - 深黑色半透明 + 磨砂玻璃 */}
           <div 
-            className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300"
+            className="absolute inset-0 transition-opacity duration-300"
+            style={{
+              background: 'rgba(0, 0, 0, 0.8)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)'
+            }}
             onClick={() => setShowModal(false)}
             onWheel={(e) => {
               // 阻止背景滚动
@@ -673,13 +716,19 @@ const TestimonialSection = () => {
             }}
           />
 
-          {/* 模态框主体 - Cyberpunk Terminal */}
+          {/* 模态框主体 - 深灰色磨砂玻璃 */}
           <div 
-            className="relative w-full max-w-2xl bg-[#0a0a10] border border-purple-500/30 rounded-lg shadow-[0_0_50px_rgba(168,85,247,0.15)] flex flex-col animate-in fade-in zoom-in-95 duration-300"
+            className="relative w-full max-w-2xl flex flex-col animate-in fade-in zoom-in-95 duration-300"
             style={{
+              background: 'rgba(30, 30, 30, 0.6)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '16px',
               maxHeight: '75vh',
-              marginTop: '80px', // 避免被页眉挡住
-              overflow: 'hidden' // 禁用模态框容器滚动
+              marginTop: '80px',
+              overflow: 'hidden',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
             }}
             onClick={(e) => {
               // 阻止点击模态框内容时关闭
@@ -692,15 +741,19 @@ const TestimonialSection = () => {
           >
             
             {/* 顶部装饰条 */}
-            <div className="h-1 w-full bg-gradient-to-r from-purple-600 via-cyan-500 to-purple-600 animate-[shimmer_2s_infinite]" style={{backgroundSize: '200% 100%'}} />
+            <div className="h-1 w-full bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 animate-[shimmer_2s_infinite]" style={{backgroundSize: '200% 100%'}} />
             
-            <div className="p-1 bg-white/5 border-b border-white/5 flex items-center justify-between px-4">
-               <div className="flex items-center gap-2 text-sm text-purple-400">
-                  <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"/>
+            <div className="p-4 border-b border-white/5 flex items-center justify-between">
+               <div className="flex items-center gap-2 text-sm text-white">
+                  <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"/>
                   用户评价系统
                </div>
-               <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-white transition-colors">
-                 <Icon.X className="w-5 h-5" />
+               <button 
+                 onClick={() => setShowModal(false)} 
+                 className="text-neutral-400 hover:text-white transition-colors"
+                 style={{ fontSize: '24px', lineHeight: '1', padding: '4px' }}
+               >
+                 ×
                </button>
             </div>
 
@@ -711,15 +764,18 @@ const TestimonialSection = () => {
               />
 
               <div className="relative z-10">
-                <h3 className="text-3xl font-black text-white mb-1 tracking-tight">
-                  发表 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">用户评价</span>
+                <h3 className="text-3xl font-bold text-white mb-2 tracking-tight text-center">
+                  发表 <span className="text-[#ff4d00]">用户评价</span>
                 </h3>
-                <p className="text-gray-400 text-sm mb-8">请填写您的评价信息，帮助我们改进服务</p>
+                <p className="text-neutral-400 text-sm mb-8 text-center">请填写您的评价信息，帮助我们改进服务</p>
 
                 {/* 评分区域 */}
                 <div className="mb-6">
-                   <label className="block text-sm font-bold text-gray-300 mb-3">服务星级 <span className="text-gray-500 text-xs font-normal">(必填)</span></label>
-                   <div className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
+                   <label className="block text-sm font-bold text-white mb-3">服务星级 <span className="text-neutral-500 text-xs font-normal">(必填)</span></label>
+                   <div className="flex items-center gap-4 p-4 rounded-xl" style={{
+                     background: 'rgba(0, 0, 0, 0.3)',
+                     border: 'none'
+                   }}>
                       <div className="flex gap-2">
                         {[...Array(5)].map((_, i) => (
                           <button
@@ -732,14 +788,14 @@ const TestimonialSection = () => {
                             <Icon.Star 
                               className={`text-3xl transition-all duration-200 ${
                                 (hoverRating || rating) > i 
-                                  ? 'text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]' 
-                                  : 'text-gray-700 group-hover:text-gray-500'
+                                  ? 'text-[#ff4d00]' 
+                                  : 'text-neutral-700 group-hover:text-neutral-500'
                               }`} 
                             />
                           </button>
                         ))}
                       </div>
-                      <div className="text-sm text-purple-300 ml-auto">
+                      <div className="text-sm text-neutral-400 ml-auto">
                          {(hoverRating || rating) > 0 ? `已选择 ${hoverRating || rating} 星` : '请选择星级'}
                       </div>
                    </div>
@@ -747,21 +803,48 @@ const TestimonialSection = () => {
 
                 {/* 内容输入 */}
                 <div className="mb-6">
-                  <label className="block text-sm font-bold text-gray-300 mb-3">评价内容 <span className="text-gray-500 text-xs font-normal">(必填)</span></label>
+                  <label className="block text-sm font-bold text-white mb-3">评价内容 <span className="text-neutral-500 text-xs font-normal">(必填)</span></label>
                   <textarea 
                     value={content} 
                     onChange={(e)=>setContent(e.target.value)} 
                     placeholder="请详细描述您的使用体验、服务感受等..." 
-                    className="w-full h-24 bg-black/50 border border-white/10 rounded-xl p-4 text-base text-gray-200 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all placeholder-gray-500 resize-none"
+                    style={{
+                      background: 'rgba(0, 0, 0, 0.3)',
+                      border: 'none',
+                      borderBottom: '2px solid transparent',
+                      color: '#ffffff',
+                      outline: 'none'
+                    }}
+                    className="w-full h-24 rounded-xl p-4 text-base outline-none focus:border-b-[#ff4d00] transition-all placeholder-neutral-500 resize-none"
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = '2px solid #ff4d00';
+                      e.target.style.boxShadow = '0 2px 8px rgba(255, 77, 0, 0.2)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid transparent';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
 
                 {/* 多图上传 */}
                 <div className="mb-6">
-                   <label className="block text-sm font-bold text-gray-300 mb-3">项目返图 <span className="text-gray-500 text-xs font-normal">(选填，可上传多张)</span></label>
+                   <label className="block text-sm font-bold text-white mb-3">项目返图 <span className="text-neutral-500 text-xs font-normal">(选填，可上传多张)</span></label>
                    <div 
                      onClick={() => fileInputRef.current?.click()}
-                     className="group relative w-full min-h-24 border-2 border-dashed border-white/10 rounded-xl flex items-center justify-center cursor-pointer hover:border-purple-500/50 hover:bg-purple-500/5 transition-all overflow-hidden p-4"
+                     className="group relative w-full min-h-24 border-2 border-dashed rounded-xl flex items-center justify-center cursor-pointer transition-all overflow-hidden p-4"
+                     style={{
+                       background: 'rgba(0, 0, 0, 0.3)',
+                       borderColor: 'rgba(255, 255, 255, 0.1)'
+                     }}
+                     onMouseEnter={(e) => {
+                       e.currentTarget.style.borderColor = 'rgba(255, 77, 0, 0.5)';
+                       e.currentTarget.style.background = 'rgba(255, 77, 0, 0.05)';
+                     }}
+                     onMouseLeave={(e) => {
+                       e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                       e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)';
+                     }}
                    >
                       {previewUrls.length > 0 ? (
                         <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -779,12 +862,15 @@ const TestimonialSection = () => {
                               </button>
                             </div>
                           ))}
-                          <div className="w-full h-24 border-2 border-dashed border-white/20 rounded-lg flex items-center justify-center text-gray-500 hover:text-purple-400 transition-colors">
+                          <div className="w-full h-24 border-2 border-dashed rounded-lg flex items-center justify-center transition-colors" style={{
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            color: '#9ca3af'
+                          }}>
                             <span className="text-xs">+ 添加更多</span>
                           </div>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center gap-2 text-gray-500 group-hover:text-purple-400 transition-colors">
+                        <div className="flex flex-col items-center gap-2 transition-colors" style={{ color: '#9ca3af' }}>
                            <Icon.Upload className="text-2xl mb-1" />
                            <span className="text-xs">⬆️ 点击上传图片（可多选）</span>
                         </div>
@@ -801,15 +887,25 @@ const TestimonialSection = () => {
                 </div>
 
                 {/* 提交按钮 */}
-                <div className="flex justify-end pt-4 border-t border-white/10">
+                <div className="flex justify-end gap-4 pt-4 border-t border-white/10">
+                  <button 
+                    onClick={() => setShowModal(false)}
+                    className="px-8 py-3 bg-transparent text-white font-medium rounded-lg hover:bg-white/10 transition-colors"
+                  >
+                    取消
+                  </button>
                   <button 
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className="relative overflow-hidden px-8 py-3 bg-white text-black font-bold uppercase tracking-widest rounded hover:bg-cyan-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+                    style={{
+                      background: '#ff4d00',
+                      color: '#ffffff'
+                    }}
+                    className="relative overflow-hidden px-8 py-3 font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                        <span className="flex items-center gap-2">
-                         <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"/>
+                         <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>
                          提交中...
                        </span>
                     ) : (
@@ -817,7 +913,6 @@ const TestimonialSection = () => {
                          提交评价 <Icon.Signal className="w-4 h-4" />
                        </span>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 opacity-0 group-hover:opacity-20 transition-opacity"/>
                   </button>
                 </div>
 
